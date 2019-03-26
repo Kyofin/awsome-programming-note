@@ -8,7 +8,7 @@
 jps
 ```
 
-![image-20190323174107943](/Users/huzekang/Library/Application Support/typora-user-images/image-20190323174107943.png)
+![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190326095938.png)
 
 
 
@@ -59,7 +59,7 @@ jstack -l 10 > 10.stack
 - ####  用awk处理
 
 ```shell
-awk 'NR>474 && NR<494 {print}'  10.stack
+awk 'NR >474 && NR<494 {print}'  10.stack
 ```
 
 ![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190323173805.png)
