@@ -1,3 +1,11 @@
+先安装minikube和kubectrl
+
+```
+brew install kubernetes-cli && brew cask install minikube
+```
+
+
+
 ## 1. 启动minikube（需翻墙）
 
 启动集群，初始化服务，这个过程会下载虚拟机镜像，启动virtualbox的虚拟机。
