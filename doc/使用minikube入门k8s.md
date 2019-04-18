@@ -1,4 +1,4 @@
-先安装minikube和kubectrl
+mac先安装minikube和kubectrl
 
 ```
 brew install kubernetes-cli && brew cask install minikube
@@ -107,7 +107,41 @@ curl $(minikube service hello-minikube --url)
 
 
 
-## 5. docker容器
+## 5. 扩展服务
+
+```
+kubectl scale deployment hello-minikube --replicas=3
+```
+
+![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190414000829.png)
+
+
+
+可以观察到容器组pod和deployment都有三个应用显示。
+
+打开dashboard观察服务hello-minikube
+
+![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190414000940.png)
+
+
+
+此时用浏览器访问该服务对外的网址。
+
+![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190414001150.png)
+
+可以观察到每次访问的hostname都不一样，因为访问的是不同的主机的应用。
+
+达到了负载均衡的效果。
+
+
+
+**网络拓扑图：**
+
+![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190414001339.png)
+
+
+
+## 6. docker容器
 
 整个过程中，部署应用，其实就是启动了docker应用。
 
@@ -131,7 +165,7 @@ eval $(minikube docker-env)
 
 
 
-## 6. 控制台dashboard
+## 7. 控制台dashboard
 
 minikube 提供了dashboard可视化界面
 
@@ -147,7 +181,7 @@ minikube dashboard
 
 
 
-## 7. 删除服务
+## 8. 删除服务
 
 ```
 kubectl delete services hello-minikube
@@ -155,7 +189,7 @@ kubectl delete services hello-minikube
 
 
 
-## 8. 删除应用
+## 9. 删除应用
 
 ```
 kubectl delete deployment hello-minikube
@@ -163,7 +197,7 @@ kubectl delete deployment hello-minikube
 
 
 
-## 9. 停止minikube
+## 10. 停止minikube
 
 ```
 minikube stop
