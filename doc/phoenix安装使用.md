@@ -28,7 +28,7 @@ $ ../hadoop-2.7.3/sbin/stop-dfs.sh
 ## 验证phoenix
 ### 1）查看所有表
 输入 !tables ，查看都有哪些表。以下显示均为Phoenix系统表，系统表中维护了用户表的元数据信息。
-![图片](https://uploader.shimo.im/f/GSDnqPzCSPAp9NrV.png!thumbnail)
+![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190418212032.png)
 注意：上图中，我们使用了 sqlline.py 支持的 table 命令，该命令可以列出 HBase 中所有的表。这里需要注意 Phoenix 不支持直接显示 HBase Shell 中创建的表格。原因很简单，当在 Phoenix 创建一张表时，Phoenix 是将表进行了重组装。而对 HBase Shell 创建的表 Phoenix 并未进行加工，所以无法直接显示。如果需要将 HBase Shell 中创建的表格关联到 Phoenix 中查看，就需要在 Phoenix 中创建一个视图（View）做关联。
 ### 2）退出Phoenix
 输入 !exit 命令(PS：Phoenix早期版本如(2.11版本)需输入!quilt才可退出，目前高版本已改为!exit命令)
