@@ -12,9 +12,9 @@
 
 ## 下载文件
 
+```
 wget https://archive.apache.org/dist/kylin/apache-kylin-2.1.0/apache-kylin-2.1.0-bin-cdh57.tar.gz
-
-
+```
 
 ## 解压到/usr/local目录，建立软连接
 
