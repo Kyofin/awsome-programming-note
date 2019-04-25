@@ -12,7 +12,9 @@
 
 <https://gitee.com/huzekang/cdhproject/tree/master/hive>
 
+解压文件获得我们想要的驱动文件。
 
+![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190425225554.png)
 
 ## 新建数据源类型
 
