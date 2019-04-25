@@ -1,6 +1,11 @@
+[TOC]
+
 >安装参考：[https://www.cnblogs.com/frankdeng/p/9536450.html](https://www.cnblogs.com/frankdeng/p/9536450.html)
 >命令使用参考：[https://www.cnblogs.com/codeOfLife/p/7399188.html](https://www.cnblogs.com/codeOfLife/p/7399188.html)
-## 
+## 介绍
+
+sql on hbase
+
 ## 下载压缩包
 ```
 wget http://mirror.bit.edu.cn/apache/phoenix/apache-phoenix-4.14.1-HBase-1.2/bin/apache-phoenix-4.14.1-HBase-1.2-bin.tar.gz

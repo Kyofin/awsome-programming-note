@@ -174,3 +174,50 @@ impala之后查询会保持在0.37s左右，也是做了缓存。
 
 
 第二次查询仍是42s左右，没有更快。。。
+
+
+
+## 手动导入测试数据
+
+准备测试数据，下载地址：<https://gitee.com/huzekang/cdhproject/tree/master/kylin>
+
+![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190425171200.png)
+
+
+
+将本地文件上传到hdf (前提是手动在hdfs上已经有如下目录)
+
+```
+hdfs dfs -put employee.csv /tmp/data/kylin/
+hdfs dfs -put department.csv /tmp/data/kylin
+```
+
+
+
+导入外部数据到hive
+
+```
+beeline -u "jdbc:hive2://quickstart.cloudera:10000/default" -n hive -f create_table.sql
+```
+
+
+
+使用beeline命令查看hive中导进去的表
+
+```
+beeline -u "jdbc:hive2://quickstart.cloudera:10000/default" 
+```
+
+连接上hive后，执行查询语句
+
+```
+0: jdbc:hive2://quickstart.cloudera:10000/def> select * from employee;
+```
+
+![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190425171924.png)
+
+
+
+或者打开hue也可以看到hive中已经有导进去的表了
+
+![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190425171457.png)
