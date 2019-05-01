@@ -1,4 +1,6 @@
-mac先安装minikube和kubectrl
+[TOC]
+
+> mac先安装minikube和kubectrl
 
 ```
 brew install kubernetes-cli && brew cask install minikube

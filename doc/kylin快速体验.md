@@ -221,3 +221,86 @@ beeline -u "jdbc:hive2://quickstart.cloudera:10000/default"
 或者打开hue也可以看到hive中已经有导进去的表了
 
 ![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190425171457.png)
+
+
+
+
+
+## 使用restful方式访问kylin
+
+> 参考官方文档：<http://kylin.apache.org/cn/docs/howto/howto_use_restapi.html#authentication>
+
+### 首先需要获取认证
+
+这里使用python根据账户密码生成一下认证信息。
+
+```
+python2.7 -c "import base64; print base64.standard_b64encode('ADMIN:KYLIN')"
+```
+
+ADMIN/KYLIN 是kylin的登录账户密码。
+
+
+
+可以生成认证
+
+```
+QURNSU46S1lMSU4=
+```
+
+
+
+### 使用api访问kylin
+
+要在请求头带上认证信息`QURNSU46S1lMSU4=`才可以正常访问。
+
+```shell
+curl -X POST -H "Authorization: Basic QURNSU46S1lMSU4=" -H "Content-Type: application/json" -d '{ "sql":"select count(*) from KYLIN_ACCOUNT", "project":"learn_kylin" }' http://10.0.0.62:7070/kylin/api/query
+```
+
+可以得到响应
+
+```json
+{
+    "columnMetas": [
+        {
+            "isNullable": 0,
+            "displaySize": 19,
+            "label": "EXPR$0",
+            "name": "EXPR$0",
+            "schemaName": null,
+            "catelogName": null,
+            "tableName": null,
+            "precision": 19,
+            "scale": 0,
+            "columnType": -5,
+            "columnTypeName": "BIGINT",
+            "readOnly": true,
+            "autoIncrement": false,
+            "caseSensitive": true,
+            "currency": false,
+            "definitelyWritable": false,
+            "searchable": false,
+            "signed": true,
+            "writable": false
+        }
+    ],
+    "results": [
+        [
+            "10000"
+        ]
+    ],
+    "cube": "CUBE[name=kylin_sales_cube]",
+    "affectedRowCount": 0,
+    "isException": false,
+    "exceptionMessage": null,
+    "duration": 185,
+    "totalScanCount": 0,
+    "totalScanBytes": 0,
+    "hitExceptionCache": false,
+    "storageCacheUsed": false,
+    "pushDown": false,
+    "partial": false
+}
+```
+
