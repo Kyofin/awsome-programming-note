@@ -77,7 +77,17 @@ tmux ls
 `ctrl+b+[` 	然后用↕️键像操作vi一样来滚动屏幕 ，退出直接按`q`键即可。
 
 `ctrl+b+?`	显示快捷键帮助
-`ctrl+b +"`	模向分隔窗口
+`ctrl+b+"`	模向分隔窗口
+
 `ctrl+b+%` 	 纵向分隔窗口
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190506234740.png)
+
+`ctrl+b+x`	关闭光标所在的面板
+
+根据提示按y则关闭该面板。
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190506235126.png)
+
 `ctrl+b+q` 	显示分隔窗口的编号
 `ctrl+b+上下键`	上一个及下一个分隔窗口
