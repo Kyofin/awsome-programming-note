@@ -71,7 +71,16 @@ export HBASE_REGIONSERVER_OPTS="$HBASE_REGIONSERVER_OPTS -XX:PermSize=128m -XX:M
 </property>
 ```
 
- 
+- 指定zookeeper数据目录
+
+  ```
+  <property>
+    <name>hbase.zookeeper.property.dataDir</name>
+    <value>/opt/data/zookeeper</value>
+  </property>
+  ```
+
+  
 
 - 指定分布式运行
 
