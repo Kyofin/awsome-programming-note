@@ -27,7 +27,7 @@ fdisk -l
 ### 备份/home :  
 
 ```
-cp -r  /home/  homebak/ 
+cp -rp  /home/  homebak/ 
 ```
 
 
