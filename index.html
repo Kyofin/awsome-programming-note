@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Description">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css">
+
+</head>
+
+<body>
+
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      name: 'Awsome-Programming-Note',
+      repo: 'https://github.com/huzekang/',
+      // 搜索工具
+      search: {
+        maxAge: 86400000, // 过期时间，单位毫秒，默认一天
+        paths: ['doc/webmagic快速体验'], // or 'auto'
+        placeholder: '🔍搜索',
+        noData: 'No Results!',
+        // 搜索标题的最大程级, 1 - 6
+        depth: 6
+      },
+      auto2top: true,
+      // 上方导航
+      loadNavbar: true,
+      // 侧边导航
+      loadSidebar: false,
+      markdown: {
+        renderer: {
+          code: function (code, lang) {
+            if (lang === "mermaid") {
+              return (
+                '<div class="mermaid">' + mermaid.render(lang, code) + "</div>"
+              );
+            }
+            return this.origin.code.apply(this, arguments);
+          }
+        }
+      },
+      // 评论系统
+      disqus: 'huzekang',
+      // 底部声明
+      plugins: [
+        function (hook) {
+          var footer = [
+            '<hr/>',
+            '<footer>',
+            '<span><a href="https://github.com/huzekang">huzekang</a> &copy;2019.</span>',
+            '</footer>'
+          ].join('')
+
+          hook.afterEach(function (html) {
+            return html + footer
+          })
+        }
+      ]
+    }
+  </script>
+  <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
+  <script src="//unpkg.com/docsify/lib/plugins/emoji.js"></script>
+  <script src="//unpkg.com/docsify/lib/plugins/disqus.min.js"></script>
+  <script src="//unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  <script src="//unpkg.com/prismjs/components/prism-bash.js"></script>
+  <!-- java代码高亮 -->
+  <script src="//unpkg.com/prismjs/components/prism-java.js"></script>
+  <script src="//unpkg.com/docsify/lib/plugins/zoom-image.js"></script>
+  <script src="//unpkg.com/docsify/lib/plugins/search.js"></script>
+
+</body>
+
+</html>

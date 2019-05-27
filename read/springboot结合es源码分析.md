@@ -48,7 +48,7 @@ ElasticsearchTemplate
 
 requestBuilder的source属性可以看到发送请求的body
 
-![image-20190325171754515](/Users/huzekang/Library/Application Support/typora-user-images/image-20190325171754515.png)
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190527214202.png)
 
 
 
