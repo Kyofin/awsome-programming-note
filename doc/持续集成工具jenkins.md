@@ -51,7 +51,7 @@ Jenkins对于maven工程完整的编译和发布流程如下：
 1、本地下载**jdk8.tar.gz**包，然后通过xshell和xftp工具上传到**/opt**【可自定义】目录。
 2、使用**tar -zxvf jdk8.tar.gz **解压文件。
 3、打开**/etc/profile**文件中配置java环境
-```
+```shell
 export JAVA_HOME=/opt/jdk1.8.0_161
 export JRE_HOME=${JAVA_HOME}/jre
 export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
@@ -77,7 +77,7 @@ export PATH=${MAVEN_HOME}/bin:$PATH
 5、检验是否配置成功。
 ![图片](https://images-cdn.shimo.im/p63TOsQeH8Y1mEhs/image.png!thumbnail)
 maven的配置setting.xml最好修改镜像源：
-```
+```java
 <mirror>  
    <id>alimaven</id>  
    <name>aliyun maven</name>  
@@ -86,8 +86,8 @@ maven的配置setting.xml最好修改镜像源：
  </mirror>  
 ```
 ### 安装git环境
-按照以下命名安装：
-```
+按照以下命令安装：
+```bash
 yum install curl-devel expat-devel gettext-devel openssl-devel zlib-devel gcc perl-ExtUtils-MakeMaker
 
 wget https://www.kernel.org/pub/software/scm/git/git-1.8.3.1.tar.gz
@@ -113,14 +113,14 @@ wget http://ftp-chi.osuosl.org/pub/jenkins/war-stable/2.164.1/jenkins.war
 jenkins.war包可以有两种运行方式：
 * 第一种是把war包放到tomcat的webapps目录下运行；
 * 第二种是直接通过java -jar来启动项目，因为jenkins.war包里面已经内置了jetty服务器，可以直接启动，通过--httpPort来指定启动端口，添加&表示以服务形式启动。
-```
+```bash
 nohup java -jar jenkins.war --httpPort=8081 &
 ```
 ### 安装过程
 打开链接地址[http://你的ip](http://你的ip):8081,
 ![图片](https://images-cdn.shimo.im/NO68eFVOhVAZIDnm/image.png!thumbnail)
 获取秘钥：
-```
+```bash
 cat /root/.jenkins/secrets/initialAdminPassword
 ```
 新手最好直接选择安装推荐的插件就可以，熟悉以后下次就可以自定义插件安装即可。
@@ -204,7 +204,7 @@ clean install -Dmaven.test.skip=true -Ptest
 * nohup表示不用提示
 
 详细shell脚本如下：
-```
+```shell
 #!/bin/bash
 echo '~~~~~~~~~开始启动项目~~~~~~~~~'
 
@@ -250,7 +250,7 @@ echo '~~~~~~~~~结束启动项目~~~~~~~~~'
 
 代码注释：
 获得已经在执行程序的pid ，并kill掉
-```
+```bash
 ps -ef | grep $JARFILE | grep -v grep | awk '{print $2}' | xargs kill -9
 ```
 
@@ -267,4 +267,5 @@ ps -ef | grep $JARFILE | grep -v grep | awk '{print $2}' | xargs kill -9
 * 配置项目的git仓库地址
 * 配置maven构建命令（打包命令）
 * 打包文成之后执行shell实现切换jar，重新部署项目。
+
 ### 

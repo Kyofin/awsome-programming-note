@@ -6,7 +6,7 @@
 
 ### 检测安装的conda版本
 
-```
+```bash
 conda --version
 ```
 
@@ -16,7 +16,7 @@ Conda会返回你安装Anaconda软件的版本。
 
 ### 升级当前版本conda
 
-```
+```bash
 conda update conda
 ```
 
@@ -26,7 +26,7 @@ conda update conda
 
 ### 创建新环境
 
-```
+```bash
 conda create -n snake2 python=2
 ```
 
@@ -36,13 +36,13 @@ conda create -n snake2 python=2
 
 ### 切换到新环境
 
-```
+```bash
 conda activate snake2
 ```
 
 此时检测一下环境内的python版本
 
-```
+```bash
 python --version                                  
 
 Python 2.7.16 :: Anaconda, Inc.
@@ -54,13 +54,13 @@ Python 2.7.16 :: Anaconda, Inc.
 
 ### 切换回原来的环境
 
-```
+```bash
 conda deactivate
 ```
 
 此时检测一下环境内的python版本
 
-```
+```bash
 python --version 
 
 Python 3.6.8 :: Anaconda custom (64-bit)
@@ -82,7 +82,7 @@ conda info --envs
 
 ### 检查环境内的包：
 
-```
+```bash
 conda list
 ```
 
@@ -94,7 +94,7 @@ conda list
 
 ### 查找一个包是否能安装的版本：
 
-```
+```bash
 conda search beautifulsoup4
 ```
 
@@ -102,7 +102,7 @@ conda search beautifulsoup4
 
 ### 安装包，必须告知安装环境的名字：
 
-```
+```bash
  conda install --name snake2 pandas
 ```
 
@@ -114,7 +114,7 @@ conda search beautifulsoup4
 
 检查一下在snake环境中是否安装成功。
 
-```
+```bash
 conda list
 ```
 
@@ -124,7 +124,7 @@ conda list
 
 ### 移除安装的包，必须告知移除包的环境：
 
-```
+```bash
 conda remove -n base beautifulsoup4
 ```
 
@@ -134,12 +134,12 @@ conda remove -n base beautifulsoup4
 
 如果一个包不能使用conda安装，我们接下来将在Anaconda.org网站查找。Anaconda.org向公开和私有包仓库提供包管理服务。Anaconda.org是一个连续分析产品。
  **提示：**你在Anaconda.org下载东西的时候不强制要求注册。
- 为了从Anaconda.org下载到当前的环境中，我们需要通过指定Anaconda.org为一个特定通道，通过输入这个包的完整路径来实现。
+ **为了从Anaconda.org下载到当前的环境中，我们需要通过指定Anaconda.org为一个特定通道，通过输入这个包的完整路径来实现。**
  在浏览器中，去 <http://anaconda.org> 网站。我们查找一个叫“bottleneck”的包，所以在左上角的叫“Search Anaconda Cloud”搜索框中输入“bottleneck”并点击search按钮。
  Anaconda.org上会有超过一打的bottleneck包的版本可用，但是我们想要那个被下载最频繁的版本。所以你可以通过下载量来排序，通过点击Download栏。
  点击包的名字来选择最常被下载的包。它会链接到Anaconda.org详情页显示下载的具体命令：
 
-```
+```bash
 conda install --channel https：//conda .anaconda.ort/pandas bottleneck
 ```
 
@@ -150,17 +150,17 @@ conda install --channel https：//conda .anaconda.ort/pandas bottleneck
 ### 通过pip命令来安装包
 
 对于那些无法通过conda安装或者从Anaconda.org获得的包，我们通常可以用pip（“pip install packages”的简称）来安装包。
- **提示：** pip只是一个包管理器，所以它不能为你管理环境。pip甚至不能升级python，因为它不像conda一样把python当做包来处理。但是它可以安装一些conda安装不了的包，和vice versa（此处不会翻译）。pip和conda都集成在Anaconda或miniconda里边。
+ **提示：** pip只是一个包管理器，所以它不能为你管理环境。pip甚至不能升级python，因为它不像conda一样把python当做包来处理。但是它可以安装一些conda安装不了的包，和vice versa（此处不会翻译）。**pip和conda都集成在Anaconda或miniconda里边。**
 
 我们激活我们想放置程序的环境
 
-```
+```bash
 activate snake2
 ```
 
 然后通过pip安装一个叫“See”的程序。
 
-```
+```bash
 pip install see
 ```
 
@@ -168,7 +168,7 @@ pip install see
 
 ### 移除一个虚拟环境：
 
-```
+```bash
 conda remove -n python3 --all
 ```
 
@@ -176,23 +176,3 @@ conda remove -n python3 --all
 
 
 
-## 结合conda切换jupyter内的python版本
-
-由于我的aconda是3版本的，默认的jupyter内核就是python3的。现在需要为它安装上python2.7的内核。
-
-参考上述已经安装了基于python2.7的虚拟环境sanke2。
-
-1. 安裝ipykernel到pip
-
-   ```
-   python -m pip install ipykernel
-   ```
-
-2. 使用pip安裝python到jupyter
-   ```
-python -m ipykernel install --user
-   ```
-
-现在重新打开`jupyter notebook`，就可以看到有`python2`和`python3`兩個kernel了。
-
-![](https://raw.githubusercontent.com/huzekang/picbed/master/20190527164119.png)

@@ -43,7 +43,7 @@
 1. 在虚拟机centos系统内设置虚拟机IP
 
 /etc/sysconfig/network-scripts/ifcfg-ens33（修改网卡）
-```
+```bash
 vi /etc/sysconfig/network-scripts/ifcfg-ens33
 ```
 
@@ -57,13 +57,13 @@ vi /etc/sysconfig/network-scripts/ifcfg-ens33
 * GATEWAY：网关ip。编辑好以后保存退出。
 
 /etc/resolv.conf（设置DNS）
-```
+```bash
 vi /etc/resolv.conf
 ```
 ![图片](https://uploader.shimo.im/f/jh4rZIvJYksadxmm.png!thumbnail)
 
 1. 重启网卡
-```
+```bash
 service network restart
 ```
 ### 
@@ -102,7 +102,7 @@ service network restart
 1. 改变虚拟机ip和网关。
 
 /etc/sysconfig/network-scripts/ifcfg-ens33（修改网卡）
-```
+```bash
 vi /etc/sysconfig/network-scripts/ifcfg-ens33
 ```
 ![图片](https://uploader.shimo.im/f/uSrAL4hjfL0rMzfb.png!thumbnail)
@@ -110,13 +110,13 @@ vi /etc/sysconfig/network-scripts/ifcfg-ens33
 
 ## 设置hostname
 1. 要查看主机名相关的设置：
-```
+```bash
 [root@localhost ~]# hostnamectl
 ```
   ![图片](https://uploader.shimo.im/f/pIfLcgcL13wdxuv0.png!thumbnail)
 
 1. 同时修改静态、瞬态和灵活主三个主机名：
-```
+```bash
 [root@localhost ~]# hostnamectl set-hostname node1
 ```
 一旦修改了静态主机名，/etc/hostname 将被自动更新。
@@ -124,7 +124,7 @@ vi /etc/sysconfig/network-scripts/ifcfg-ens33
 否则系统再启动时会很慢。
 
 1. 手动更新/etc/hosts 
-```
+```bash
 vim /etc/hosts
 
 127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4 node1
@@ -144,7 +144,7 @@ reboot -f 
 
 ## CentOS7系统配置国内yum源和epel源
 ### 1.首先进入/etc/yum.repos.d/目录下，新建一个repo_bak目录，用于保存系统中原来的repo文件
-```
+```bash
 cd /etc/yum.repos.d/
 mkdir repo_bak
 mv *.repo repo_bak/
@@ -152,7 +152,7 @@ mv *.repo repo_bak/
 
 ### 2.在CentOS中配置使用网易和阿里的开源镜像
 到网易和阿里开源镜像站点下载系统对应版本的repo文件
-```
+```bash
  wget http://mirrors.aliyun.com/repo/Centos-7.repo &&
  wget http://mirrors.163.com/.help/CentOS7-Base-163.repo
 ```
@@ -182,7 +182,7 @@ yum makecache
 ```
 
 ### 4.安装epel源
-```
+```bash
  yum list | grep epel-release
  yum install -y epel-release
 ```
