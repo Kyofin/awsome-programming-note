@@ -18,12 +18,12 @@
   * [kylin快速体验](doc/kylin快速体验)
   * [phoenix安装使用](doc/phoenix安装使用)
   * [headless浏览器puppeteer快速体验](doc/headless浏览器puppeteer快速体验)
-  
   * [SpringBoot引入第三方jar包](doc/SpringBoot引入第三方jar包)
-
   * [ssh免密登录](doc/ssh免密登录)
   * [ssh终端复用神器——tmux](doc/ssh终端复用神器——tmux)
   * [webmagic快速体验](doc/webmagic快速体验)
+  * [postgres数据库实践](doc/postgres数据库实践)
+  * [切换jupyter内的python版本](doc/切换jupyter内的python版本)
 
 * 源码阅读🗂
   * [springboot结合es源码分析](read/springboot结合es源码分析)
