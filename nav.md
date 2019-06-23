@@ -24,6 +24,7 @@
   * [webmagic快速体验](doc/webmagic快速体验)
   * [postgres数据库实践](doc/postgres数据库实践)
   * [切换jupyter内的python版本](doc/切换jupyter内的python版本)
+  * [使用portainer管理docker主机](doc/使用portainer管理docker主机)
 
 * 源码阅读🗂
   * [springboot结合es源码分析](read/springboot结合es源码分析)

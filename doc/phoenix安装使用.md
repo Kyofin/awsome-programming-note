@@ -7,7 +7,7 @@
 sql on hbase
 
 ## 下载压缩包
-```
+```shell
 wget http://mirror.bit.edu.cn/apache/phoenix/apache-phoenix-4.14.1-HBase-1.2/bin/apache-phoenix-4.14.1-HBase-1.2-bin.tar.gz
 ```
 
@@ -20,7 +20,7 @@ cp phoenix-4.14.1-HBase-1.2-server.jar /opt/hadoop/hbase-1.2.4/lib
 
 
 ## 重启Hbase,hdfs
-```
+```shell
 $ ../hbase-1.2.4/bin/stop-hbase.sh
 $ ../hadoop-2.7.3/sbin/stop-dfs.sh
 ```
@@ -40,12 +40,12 @@ $ ../hadoop-2.7.3/sbin/stop-dfs.sh
 
 ## Phoenix的使用
  从命令行执行SQL的终端接口现在与Phoenix捆绑在一起。要启动它，请从bin目录执行以下命令：
-```
+```shell
 [admin@node21 phoenix-4.14.0-HBase-1.2]$ ./bin/sqlline.py localhost
 ```
 ### **1）**建表插入数据：
 这里演示官方案例，安装包目录下examples包下STOCK_SYMBOL.sql 内容如下：
-```
+```sql
 CREATE TABLE IF NOT EXISTS STOCK_SYMBOL (SYMBOL VARCHAR NOT NULL PRIMARY KEY, COMPANY VARCHAR);
 UPSERT INTO STOCK_SYMBOL VALUES ('CRM','SalesForce.com');
 SELECT * FROM STOCK_SYMBOL;
@@ -53,20 +53,36 @@ SELECT * FROM STOCK_SYMBOL;
 
 ### **2）**导入数据：
 此外，您可以使用bin / psql.py加载CSV数据或执行SQL脚本。例如：
-```
+```shell
 [admin@node21 phoenix-4.14.0-HBase-1.2]$ ./bin/psql.py -t STOCK_SYMBOL localhost ./examples/STOCK_SYMBOL.csv 
 ```
 PS：其中 -t 后面是表名， ../examples/STOCK_SYMBOL.csv是csv数据（注意数据的分隔符需要是逗号）。
 
 
 ### **3）**查询数据
-```
+```sql
  select * from STOCK_SYMBOL;
 ```
 
+### Java调用
 
-### java调用
+引入依赖
+
 ```
+<dependencies>
+    <dependency>
+      <groupId>org.apache.phoenix</groupId>
+      <artifactId>phoenix-core</artifactId>
+      <version>4.13.1-HBase-1.2</version>
+    </dependency>
+  </dependencies>
+```
+
+
+
+编写测试代码
+
+```java
 package com.xyg.phoenix;
 
 

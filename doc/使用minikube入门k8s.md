@@ -85,9 +85,9 @@ kubectl get services
 - 登录节点(minikube mac节点）访问
 - 通过minikube service命令访问
 
-### VM节点访问
+### 虚拟机节点内部访问
 
- 可以登录到virutalbox控制台（minikube虚拟机）上直接访问：
+ 可以用`root`账号登录到virutalbox控制台（minikube虚拟机）上直接访问：
 
 ```
 curl http://10.97.116.251:8080/
@@ -97,7 +97,7 @@ curl http://10.97.116.251:8080/
 
 ### minikube service方式
 
- 也可以通过minikube的命令查看数据
+ 也可以在mac上直接通过minikube的命令查看数据
 
 ```
 curl $(minikube service hello-minikube --url)
@@ -143,7 +143,7 @@ kubectl scale deployment hello-minikube --replicas=3
 
 
 
-## 6. docker容器
+## 6. 连接到本机docker容器
 
 整个过程中，部署应用，其实就是启动了docker应用。
 
@@ -167,7 +167,7 @@ eval $(minikube docker-env)
 
 
 
-## 7. 控制台dashboard
+## 7. 打开dashboard
 
 minikube 提供了dashboard可视化界面
 
@@ -175,9 +175,11 @@ minikube 提供了dashboard可视化界面
 minikube dashboard
 ```
 
-默认会弹出浏览器 <http://192.168.99.100:30000/#!/overview?namespace=default>
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190608212619.png)
 
-![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190413230652.png)
+该命令会在mac上自动打开chrome，并跳转dashboard页面
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190608212529.png)
 
 可以直观查看节点（node）、部署（deployment）、容器组（pod）、副本集（ReplicaSet）等。
 
@@ -205,3 +207,24 @@ kubectl delete deployment hello-minikube
 minikube stop
 ```
 
+
+
+------
+
+## 查看创建的k8s节点ip
+
+```shell
+minikube ip
+```
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190608212154.png)
+
+
+
+## ssh连接该k8s节点
+
+```shell
+minikube ssh
+```
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190608212816.png)
