@@ -11,6 +11,7 @@
 | zookeeeper | zookeeper-3.4.5-cdh5.14.2 | [点击下载](http://archive.cloudera.com/cdh5/cdh/5/zookeeper-3.4.5-cdh5.14.2.tar.gz) |
 | hbase      | hbase-1.2.0-cdh5.14.2     | [点击下载](http://archive.cloudera.com/cdh5/cdh/5/hbase-1.2.0-cdh5.14.2.tar.gz) |
 | hive       | hive-1.1.0-cdh5.14.2      | [点击下载](http://archive.cloudera.com/cdh5/cdh/5/hive-1.1.0-cdh5.14.2.tar.gz) |
+| hue        | hue-3.9.0-cdh5.14.2       | [点击下载](http://archive.cloudera.com/cdh5/cdh/5/hue-3.9.0-cdh5.14.2.tar.gz) |
 
 注： CDH5的所有软件可以在此下载：<http://archive.cloudera.com/cdh5/cdh/5/>
 
@@ -234,7 +235,7 @@ To start ZooKeeper you need a configuration file. Here is a sample, create it in
 
 ```
 tickTime=2000
-dataDir=/var/lib/zookeeper
+dataDir=/Users/huzekang/opt/hadoop-cdh/data/zookeeper
 clientPort=2181
 ```
 
@@ -258,6 +259,10 @@ Now that you created the configuration file, you can **start ZooKeeper**:
 bin/zkServer.sh start
 ```
 
+启动的是一个java进程。
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190626145350.png)
+
 ZooKeeper logs messages using log4j -- more detail available in the [Logging](http://archive.cloudera.com/cdh5/cdh/5/zookeeper-3.4.5-cdh5.14.2/zookeeperProgrammers.html#Logging) section of the Programmer's Guide. You will see log messages coming to the console (default) and/or a log file depending on the log4j configuration.
 
 The steps outlined here run ZooKeeper in standalone mode. There is no replication, so if ZooKeeper process fails, the service will go down. This is fine for most development situations, but to run ZooKeeper in replicated mode, please see [Running Replicated ZooKeeper](http://archive.cloudera.com/cdh5/cdh/5/zookeeper-3.4.5-cdh5.14.2/zookeeperStarted.html#sc_RunningReplicatedZooKeeper).
@@ -277,6 +282,10 @@ $ bin/zkCli.sh -server 127.0.0.1:2181
 ```
 
 This lets you perform simple, file-like operations.
+
+启动的是一个java进程。
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190626145423.png)
 
 Once you have connected, you should see something like:
 
@@ -406,6 +415,101 @@ Finally, let's delete the node by issuing:
 
 
 
+## HBASE
+
+### 配置conf目录下文件
+
+#### hbase-env.sh
+
+配置java环境
+
+```shell
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home
+```
+
+注释jdk7需要的配置，因为我使用的是jdk8
+
+```shell
+#export HBASE_MASTER_OPTS="$HBASE_MASTER_OPTS -XX:PermSize=128m -XX:MaxPermSize=128m -XX:ReservedCodeCacheSize=256m"
+#export HBASE_REGIONSERVER_OPTS="$HBASE_REGIONSERVER_OPTS -XX:PermSize=128m -XX:MaxPermSize=128m -XX:ReservedCodeCacheSize=256m"
+```
+
+设置hbase pid文件路径，用于关闭hbase使用
+
+```shell
+export HBASE_PID_DIR=/Users/huzekang/opt/hadoop-cdh/data/hbase/tmp/pids
+```
+
+使用外部zookeeper
+
+```shell
+export HBASE_MANAGES_ZK=false
+```
+
+
+
+#### hbase-site.xml
+
+```xml
+<configuration>
+    <!-- 配置本地临时目录，缺省值是'/tmp' -->
+    <property>
+        <name>hbase.tmp.dir</name>
+        <value>/Users/huzekang/opt/hadoop-cdh/data/hbase/tmp</value>
+    </property>
+
+
+    <!-- 指定外部zookeeper连接 -->
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>localhost:2181</value>
+    </property>
+
+
+    <!-- 指定分布式运行 -->
+    <property>
+        <name>hbase.cluster.distributed</name>
+        <value>true</value>
+    </property>
+
+    <!-- 配置hbase目录，让HDFS生成该目录给hbase使用 -->
+    <property>
+        <name>hbase.rootdir</name>
+        <value>hdfs://localhost:9000/hbase</value>
+    </property>
+</configuration>
+```
+
+
+
+### 启动hbase
+
+```
+~/opt/hadoop-cdh/hbase-1.2.0-cdh5.14.2 » bin/start-hbase.sh                                  huzekang@huzekangdeMacBook-Pro
+```
+
+观察启动进程，其中hmaster和hregionserver就是hbase的。
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190626145232.png)
+
+打开zookeeper客户端
+
+```
+~/opt/hadoop-cdh/zookeeper-3.4.5-cdh5.14.2 » bin/zkCli.sh -server 127.0.0.1:2181
+```
+
+观察`/`目录下多了一个hbase目录
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190626144956.png)
+
+
+
+### 关闭hbase
+
+```
+~/opt/hadoop-cdh/hbase-1.2.0-cdh5.14.2 » bin/stop-hbase.sh
+```
+
 
 
 ## Hive
@@ -459,7 +563,7 @@ cp conf/hive-default.xml.template conf/hive-site.xml
 
     <property>
         <name>javax.jdo.option.ConnectionURL</name>
-        <value>jdbc:mysql://数据库地址:3306/hivedb?createDatabaseIfNotExist=true</value>
+        <value>jdbc:mysql://数据库地址:3306/hive_metadata?createDatabaseIfNotExist=true</value>
     </property>
 
     <property>
@@ -489,6 +593,11 @@ cp conf/hive-default.xml.template conf/hive-site.xml
         <value>/Users/huzekang/opt/hadoop-cdh/hive-1.1.0-cdh5.14.2/warehouse</value>
         <description>location of default database for the warehouse</description>
     </property>
+  <!--	不需要账号密码也可以登录 -->
+ 	 <property>
+  	<name>hive.server2.authentication</name>
+  	<value>NONE</value>
+	</property>
 
 </configuration>
 
@@ -578,3 +687,125 @@ insert into helloword values(11,'peter');
 打开hdfs可以观察到数据存放到指定的目录了。
 
 ![](https://raw.githubusercontent.com/huzekang/picbed/master/20190623161342.png)
+
+
+
+### 使用beeline连接
+
+####  嵌入模式
+
+```
+bin/beeline -u jdbc:hive2://
+```
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190623220356.png)
+
+此模式可以查询，也可以插入。
+
+
+
+####    远程模式
+
+```
+bin/beeline      
+
+beeline> !connect jdbc:hive2://localhost:10000
+```
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190626172239.png)
+
+此模式下可以正常查询select操作，但是插入操作和创建表都会报错。
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190623220827.png)
+
+错误信息：
+
+```java
+Error: Error while processing statement: FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Got exception: org.apache.hadoop.security.AccessControlException Permission denied: user=anonymous, access=WRITE, inode="/Users/huzekang/opt/hadoop-cdh/hive-1.1.0-cdh5.14.2/warehouse":huzekang:supergroup:drwxr-xr-x
+```
+
+此时只要对错误信息中提到的**hive在hdfs上的warehouse目录**进行change the permission即可。
+
+```
+bin/hdfs dfs -chmod -R 777 /Users/huzekang/
+```
+
+
+
+### 使用java代码连接
+
+#### 引入maven依赖
+
+```
+ <dependency>
+           <groupId>org.apache.hive</groupId>
+           <artifactId>hive-jdbc</artifactId>
+           <version>0.11.0</version>
+       </dependency>
+```
+
+#### 代码
+
+```java
+package com.wugui.sparkstarter;
+/**
+ * 如果频繁出现下面错误，试试更换hive目录下的lib目录下的mysql驱动
+ * Error while compiling statement: FAILED: SemanticException Unable to fetch table hive_table1. Could not retrieve transation read-only status server
+ */
+import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.DriverManager;
+ 
+public class HiveJdbcTest {
+
+    private static String driverName = "org.apache.hive.jdbc.HiveDriver";
+   
+    public static void main(String[] args) throws SQLException {
+        try {
+            Class.forName(driverName);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        Connection con = DriverManager.getConnection("jdbc:hive2://192.168.5.33:10000/test_hive", "", "");
+        Statement stmt = con.createStatement();
+        String tableName = "hive_table1";
+        stmt.execute("drop table if exists " + tableName);
+        stmt.execute("create table " + tableName +  " (key int, value string)");
+        System.out.println("Create table success!");
+        // show tables
+        String sql = "show tables '" + tableName + "'";
+        System.out.println("Running: " + sql);
+        ResultSet res = stmt.executeQuery(sql);
+        if (res.next()) {
+            System.out.println(res.getString(1));
+        }
+ 
+        // describe table
+        sql = "describe " + tableName;
+        System.out.println("Running: " + sql);
+        res = stmt.executeQuery(sql);
+        while (res.next()) {
+            System.out.println(res.getString(1) + "\t" + res.getString(2));
+        }
+ 
+ 
+        sql = "select * from " + tableName;
+        res = stmt.executeQuery(sql);
+        while (res.next()) {
+            System.out.println(String.valueOf(res.getInt(1)) + "\t" + res.getString(2));
+        }
+ 
+        sql = "select count(1) from " + tableName;
+        System.out.println("Running: " + sql);
+        res = stmt.executeQuery(sql);
+        while (res.next()) {
+            System.out.println(res.getString(1));
+        }
+    }
+}
+```
+
