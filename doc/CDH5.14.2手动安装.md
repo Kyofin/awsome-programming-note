@@ -902,6 +902,9 @@ sbin/start-slave.sh spark://10.130.2.220:7077
    coordinator=true
    node-scheduler.include-coordinator=true
    http-server.http.port=8082
+   query.max-memory=5GB
+   query.max-memory-per-node=1GB
+   query.max-total-memory-per-node=2GB
    discovery-server.enabled=true
    discovery.uri=http://localhost:8082
    ```
@@ -910,14 +913,13 @@ sbin/start-slave.sh spark://10.130.2.220:7077
 
    ```java
    -server
-   -Xmx4G
-   -XX:+UseConcMarkSweepGC
+   -Xmx16G
+   -XX:+UseG1GC
+   -XX:G1HeapRegionSize=32M
+   -XX:+UseGCOverheadLimit
    -XX:+ExplicitGCInvokesConcurrent
-   -XX:+CMSClassUnloadingEnabled
-   -XX:+AggressiveOpts
    -XX:+HeapDumpOnOutOfMemoryError
-   -XX:OnOutOfMemoryError=kill -9 %p
-   -XX:ReservedCodeCacheSize=150M
+   -XX:+ExitOnOutOfMemoryError
    ```
 
 3. `etc/node.properties`
