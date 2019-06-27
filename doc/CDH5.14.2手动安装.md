@@ -12,6 +12,10 @@
 | hbase      | hbase-1.2.0-cdh5.14.2     | [点击下载](http://archive.cloudera.com/cdh5/cdh/5/hbase-1.2.0-cdh5.14.2.tar.gz) |
 | hive       | hive-1.1.0-cdh5.14.2      | [点击下载](http://archive.cloudera.com/cdh5/cdh/5/hive-1.1.0-cdh5.14.2.tar.gz) |
 | hue        | hue-3.9.0-cdh5.14.2       | [点击下载](http://archive.cloudera.com/cdh5/cdh/5/hue-3.9.0-cdh5.14.2.tar.gz) |
+| presto     | presto-server-0.221       | [点击下载](https://repo1.maven.org/maven2/com/facebook/presto/presto-server/0.221/presto-server-0.221.tar.gz) |
+| kafka      | kafka_2.12-2.1.1          | [点击下载](http://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.1.1/kafka_2.12-2.1.1.tgz) |
+
+
 
 注： CDH5的所有软件可以在此下载：<http://archive.cloudera.com/cdh5/cdh/5/>
 
@@ -44,7 +48,7 @@
 
    
 
-## HDFS
+## Hdfs
 
 ### 参考官方文档
 
@@ -217,7 +221,7 @@ The following instructions assume that 1. ~ 4. steps of [the above instructions]
 
 
 
-## zookeeper
+## Zookeeper
 
 ### 参考文档
 
@@ -415,7 +419,7 @@ Finally, let's delete the node by issuing:
 
 
 
-## HBASE
+## Hbase
 
 ### 配置conf目录下文件
 
@@ -482,7 +486,7 @@ export HBASE_MANAGES_ZK=false
 
 
 
-### 启动hbase
+### 启动Hbase
 
 ```
 ~/opt/hadoop-cdh/hbase-1.2.0-cdh5.14.2 » bin/start-hbase.sh                                  huzekang@huzekangdeMacBook-Pro
@@ -512,6 +516,20 @@ export HBASE_MANAGES_ZK=false
 
 
 
+### 启动hbase thrift
+
+```
+~/opt/hadoop-cdh/hbase-1.2.0-cdh5.14.2 » bin/hbase-daemon.sh start thrift
+```
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190627100355.png)
+
+该进程可以方便其他语言例如python使用hbase的api。
+
+
+
+
+
 ## Hive
 
 ### 参考文档：
@@ -520,7 +538,7 @@ export HBASE_MANAGES_ZK=false
 
 hiveserver搭建详解：<http://www.coderli.com/setup-hiveserver-step-details/>
 
-### Metadata Store MySQL安装
+### Metadata Store postgres安装
 
 Hive有三种元数据存储的模式。
 
@@ -532,7 +550,7 @@ Hive有三种元数据存储的模式。
 
 这里找到一篇介绍，至少对我来说，算是能看懂他所介绍的。 [Metastore Deployment Modes](http://www.cloudera.com/documentation/enterprise/5-2-x/topics/cdh_ig_hive_metastore_configure.html#topic_18_4_1)
 
-这里采用**Remote mode**。因此我们先要部署**MySQL**。
+这里采用**Remote mode**。因此我们先要部署**postgres**。
 
 
 
@@ -548,11 +566,7 @@ cp conf/hive-default.xml.template conf/hive-site.xml
 
 同样，按照了解，我们需要配置**metastore**的相关信息，如数据库连接，驱动，用户名，密码等。
 
-这里连接的**mysql数据库**一定**字符格式**一定要是`latin1`
-
-不然会出现错误：
-
-*com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Column length too big for column 'TYPE_NAME' (max = 16383); use BLOB or TEXT instead*
+#### 配置hive-site.xml配置文件
 
 ```xml
 <?xml version="1.0"?>
@@ -563,22 +577,22 @@ cp conf/hive-default.xml.template conf/hive-site.xml
 
     <property>
         <name>javax.jdo.option.ConnectionURL</name>
-        <value>jdbc:mysql://数据库地址:3306/hive_metadata?createDatabaseIfNotExist=true</value>
+        <value>jdbc:postgresql://192.168.5.148:5432/hive_metadata</value>
     </property>
 
     <property>
         <name>javax.jdo.option.ConnectionDriverName</name>
-        <value>com.mysql.jdbc.Driver</value>
+        <value>org.postgresql.Driver</value>
     </property>
 
     <property>
         <name>javax.jdo.option.ConnectionUserName</name>
-        <value>root</value>
+        <value>postgres</value>
     </property>
 
     <property>
         <name>javax.jdo.option.ConnectionPassword</name>
-        <value>数据库密码</value>
+        <value>eLN8QGV4g3LINDrFrsDKvCCyHapLOPCR</value>
     </property>
 
     <property>
@@ -587,33 +601,46 @@ cp conf/hive-default.xml.template conf/hive-site.xml
         <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
     </property>
 
-   <!-- 设置hdfs上保存的数据仓库路径 -->
+    <!-- 设置hdfs上保存的数据仓库路径 -->
     <property>
         <name>hive.metastore.warehouse.dir</name>
-        <value>/Users/huzekang/opt/hadoop-cdh/hive-1.1.0-cdh5.14.2/warehouse</value>
+        <value>/hive/warehouse</value>
         <description>location of default database for the warehouse</description>
     </property>
-  <!--	不需要账号密码也可以登录 -->
- 	 <property>
-  	<name>hive.server2.authentication</name>
-  	<value>NONE</value>
-	</property>
+
+
+
 
 </configuration>
+
 
 ```
 
 这里，**metastore**服务的默认端口为**9083**。
 
-由于我们需要连接**MySQL**数据库，而**Hive**并没有提供相应的驱动，所以需要下载**MySQL JDBC**驱动，并放在**Hive**的**lib**目录下。直接进入**lib**目录执行
+由于我们需要连接**pg10**数据库，而**Hive**并没有提供相应的驱动，所以需要下载**Pg  JDBC**驱动，并放在**Hive**的**lib**目录下。直接进入**lib**目录执行
 
 ```
-wget http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar
+wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.1.4/postgresql-42.1.4.jar
 ```
 
 
 
-#### 修改log日志文件位置
+#### 初始化元数据的数据库
+
+1. 在pg中创建数据库`hive_metadata`
+
+2. 执行hive自带的初始化脚本
+
+   ```
+   bin/schematool -dbType postgres -initSchema
+   ```
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190626203349.png)
+
+
+
+#### 修改log日志文件位置(option)
 
 **Hive**默认将日志**存放在/tmp/${user.name}**下。为了方便维护和查看，修改日志文件位置。
 
@@ -732,7 +759,7 @@ bin/hdfs dfs -chmod -R 777 /Users/huzekang/
 
 
 
-### 使用java代码连接
+### 使用Java代码连接
 
 #### 引入maven依赖
 
@@ -747,17 +774,13 @@ bin/hdfs dfs -chmod -R 777 /Users/huzekang/
 #### 代码
 
 ```java
-package com.wugui.sparkstarter;
 /**
  * 如果频繁出现下面错误，试试更换hive目录下的lib目录下的mysql驱动
  * Error while compiling statement: FAILED: SemanticException Unable to fetch table hive_table1. Could not retrieve transation read-only status server
  */
-import java.sql.SQLException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.DriverManager;
- 
+
+import java.sql.*;
+
 public class HiveJdbcTest {
 
     private static String driverName = "org.apache.hive.jdbc.HiveDriver";
@@ -769,8 +792,8 @@ public class HiveJdbcTest {
             e.printStackTrace();
             System.exit(1);
         }
-
-        Connection con = DriverManager.getConnection("jdbc:hive2://192.168.5.33:10000/test_hive", "", "");
+        // 设置hive 的jdbc连接
+        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "", "");
         Statement stmt = con.createStatement();
         String tableName = "hive_table1";
         stmt.execute("drop table if exists " + tableName);
@@ -778,7 +801,7 @@ public class HiveJdbcTest {
         System.out.println("Create table success!");
         // show tables
         String sql = "show tables '" + tableName + "'";
-        System.out.println("Running: " + sql);
+        System.out.println("=======Running: " + sql);
         ResultSet res = stmt.executeQuery(sql);
         if (res.next()) {
             System.out.println(res.getString(1));
@@ -786,26 +809,286 @@ public class HiveJdbcTest {
  
         // describe table
         sql = "describe " + tableName;
-        System.out.println("Running: " + sql);
+        System.out.println("=======Running: " + sql);
         res = stmt.executeQuery(sql);
         while (res.next()) {
-            System.out.println(res.getString(1) + "\t" + res.getString(2));
+            System.out.println("表字段名："+res.getString(1) + "\t" +"表字段类型："+ res.getString(2));
         }
  
- 
+
         sql = "select * from " + tableName;
         res = stmt.executeQuery(sql);
         while (res.next()) {
-            System.out.println(String.valueOf(res.getInt(1)) + "\t" + res.getString(2));
+            System.out.println(res.getInt(1) + "\t" + res.getString(2));
         }
- 
+
+        // 插数据到hive_table1
+        sql = "insert into  " + tableName + " values (22,'xxded')";
+        System.out.println("=======Running: " + sql);
+        stmt.executeUpdate( sql);
+
+        // zh
         sql = "select count(1) from " + tableName;
         System.out.println("Running: " + sql);
         res = stmt.executeQuery(sql);
         while (res.next()) {
             System.out.println(res.getString(1));
         }
+
     }
 }
 ```
 
+
+
+
+
+## Spark
+
+### Spark集群启动命令汇总
+
+1、在主节点启动所有服务（包括slave节点，需要做免密码登录）
+
+```
+sbin/start-all.sh
+```
+
+
+2、单独启动主节点
+
+```
+sbin/start-master.sh
+```
+
+3、单独启动slave节点
+
+启动所有的slaves节点
+
+```
+sbin/start-slaves.sh spark://10.130.2.220:7077
+```
+
+启动单台的slaves节点
+
+```
+sbin/start-slave.sh spark://10.130.2.220:7077
+```
+
+启动后可以打开浏览器`http://localhost:8080/`看到spark master。
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190627113457.png)
+
+可以观察到起来了一个master和worker进程。
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190626112610.png)
+
+
+
+
+
+## Presto
+
+### 服务端安装
+
+#### 1. 下载
+
+#### 2. 配置
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190627204309.png)
+
+1. `etc/config.properties`
+
+   ```properties
+   coordinator=true
+   node-scheduler.include-coordinator=true
+   http-server.http.port=8082
+   discovery-server.enabled=true
+   discovery.uri=http://localhost:8082
+   ```
+
+2. `etc/jvm.config`
+
+   ```java
+   -server
+   -Xmx4G
+   -XX:+UseConcMarkSweepGC
+   -XX:+ExplicitGCInvokesConcurrent
+   -XX:+CMSClassUnloadingEnabled
+   -XX:+AggressiveOpts
+   -XX:+HeapDumpOnOutOfMemoryError
+   -XX:OnOutOfMemoryError=kill -9 %p
+   -XX:ReservedCodeCacheSize=150M
+   ```
+
+3. `etc/node.properties`
+
+   ```properties
+   node.environment=production
+   node.id=ffffffff-ffff-ffff-ffff-ffffffffffff
+   node.data-dir=/Users/huzekang/opt/hadoop-cdh/data/presto
+   ```
+
+#### 3. 启动
+
+daemon运行：`bin/launcher start` 
+foreground运行：`bin/launcher run`
+
+```
+~/opt/hadoop-cdh/presto-server-0.221 » bin/launcher run
+```
+
+
+
+### 客户端安装
+
+1. 下载https://repo1.maven.org/maven2/com/facebook/presto/presto-cli/0.196/presto-cli-0.196-executable.jar
+
+2. 移动到你喜欢的目录
+
+   ```shell
+   ~/opt/hadoop-cdh/presto-server-0.221/bin » mv ~/Downloads/presto-cli-0.196-executable.jar ./presto            
+   ```
+
+3. 赋予它执行的权限
+
+   ```
+    chmod +x presto
+   ```
+
+
+
+### 配置连接器
+
+#### mysql
+
+参考配置<https://prestodb.github.io/docs/current/connector/mysql.html>
+
+在server的主目录下创建配置文件`etc/catalog/mysql.properties`
+
+```properties
+connector.name=mysql
+connection-url=jdbc:mysql://192.168.1.150:3306
+connection-user=root
+connection-password=root
+```
+
+重启完server后启动客户端
+
+```
+~/opt/hadoop-cdh/presto-server-0.221/bin » ./presto --server localhost:8082 --catalog mysql --schema yiboard  
+```
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190627165459.png)
+
+
+
+#### postgres
+
+参考配置：<https://prestodb.github.io/docs/current/connector/postgresql.html>
+
+在server的主目录下创建配置文件`etc/catalog/posgresql.properties`
+
+```properties
+connector.name=postgresql
+connection-url=jdbc:postgresql://192.168.1.150:5432/crawl
+connection-user=postgres
+connection-password=123456
+```
+
+重启完server后启动客户端。
+
+```
+~/opt/hadoop-cdh/presto-server-0.221/bin » ./presto --server localhost:8082 --catalog postgresql --schema public
+```
+
+
+
+#### mongoDB
+
+参考配置：<https://prestodb.github.io/docs/current/connector/mongodb.html>>
+
+在server的主目录下创建配置文件`etc/catalog/mongodb.properties`
+
+```properties
+connector.name=mongodb
+mongodb.seeds=192.168.1.150:27017
+```
+
+重启完server后启动客户端。
+
+```
+~/opt/hadoop-cdh/presto-server-0.221/bin » ./presto --server localhost:8082 --catalog mongodb --schema yibo
+```
+
+
+
+#### hive
+
+参考配置：<https://prestodb.github.io/docs/current/connector/hive.html>>
+
+在server的主目录下创建配置文件`etc/catalog/posgresql.properties`
+
+```properties
+connector.name=hive-hadoop2
+hive.metastore.uri=thrift://localhost:9083
+```
+
+重启完server后启动客户端。
+
+```
+~/opt/hadoop-cdh/presto-server-0.221/bin » ./presto --server localhost:8082 --catalog hive --schema default
+```
+
+
+
+## Kafka
+
+#### 下载解压
+
+#### 配置
+
+配置`config/server.properties`文件。
+
+```
+broker.id=1
+log.dirs=/Users/huzekang/opt/hadoop-cdh/data/kafka/kafka-logs
+```
+
+
+
+#### 启动
+
+首先打开zookeeper。
+
+然后启动kafka server。
+
+```
+~/opt/hadoop-cdh/kafka_2.12-2.1.1 » bin/kafka-server-start.sh  config/server.properties
+```
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190627230614.png)
+
+
+
+#### 测试
+
+1. 启动控制台producer，创建一个test2的topic，输出几个hello
+
+   ```shell
+   ~/opt/hadoop-cdh/kafka_2.12-2.1.1 »  bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test2         
+   >hello1
+   [2019-06-27 23:08:54,369] WARN [Producer clientId=console-producer] Error while fetching metadata with correlation id 1 : {test2=LEADER_NOT_AVAILABLE} (org.apache.kafka.clients.NetworkClient)
+   >hello2
+   >hello3
+   >
+   ```
+
+2. 启动控制台consumer，监听test2的topic。
+
+   ```
+   bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test2 --from-beginning
+   ```
+
+   可以看到👆上面输入的都显示出来了。
+
+   ![](https://raw.githubusercontent.com/huzekang/picbed/master/20190627231059.png)
