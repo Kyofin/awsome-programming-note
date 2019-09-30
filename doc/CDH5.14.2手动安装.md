@@ -62,8 +62,14 @@ etc/hadoop/core-site.xml:
 <configuration>
     <property>
         <name>fs.defaultFS</name>
-        <value>hdfs://localhost:9000</value>
+        <value>hdfs://localhost:8020</value>
     </property>
+   <!-- 本机默认存储路径：/tmp/hadoop-huzekang/dfs/name -->
+     <!-- 防止重启电脑临时文件删除清楚所有hdfs保存的文件,该目录需手动创建 -->
+      <property>
+	        <name>hadoop.tmp.dir</name>
+	        <value>/Users/huzekang/opt/hadoop-cdh/data/hadoop/tmp</value>
+	    </property>
 </configuration>
 ```
 
@@ -417,6 +423,8 @@ Finally, let's delete the node by issuing:
 [zkshell: 18]
 ```
 
+如果需要递归删除则可以使用`rmr /hbase`
+
 
 
 ## Hbase
@@ -479,7 +487,7 @@ export HBASE_MANAGES_ZK=false
     <!-- 配置hbase目录，让HDFS生成该目录给hbase使用 -->
     <property>
         <name>hbase.rootdir</name>
-        <value>hdfs://localhost:9000/hbase</value>
+        <value>hdfs://localhost:8020/hbase</value>
     </property>
 </configuration>
 ```
@@ -489,7 +497,7 @@ export HBASE_MANAGES_ZK=false
 ### 启动Hbase
 
 ```
-~/opt/hadoop-cdh/hbase-1.2.0-cdh5.14.2 » bin/start-hbase.sh                                  huzekang@huzekangdeMacBook-Pro
+~/opt/hadoop-cdh/hbase-1.2.0-cdh5.14.2 » bin/start-hbase.sh                                  
 ```
 
 观察启动进程，其中hmaster和hregionserver就是hbase的。
@@ -845,6 +853,24 @@ public class HiveJdbcTest {
 
 ## Spark
 
+### Spark standalone集群模式部署
+
+1. 将conf目录下的`slaves.template`文件复制成`slaves`，并写入worker部署的主机![](https://i.loli.net/2019/09/30/qNhwvczkUrZO45e.png)
+
+2. 将spark目录分发到其他主机
+
+   ```
+   scp -r /opt/spark cdh02:/opt
+   ```
+
+3. 在主节点的spark目录下启动集群
+
+   ```
+   sbin/start-all.sh
+   ```
+
+   
+
 ### Spark集群启动命令汇总
 
 1、在主节点启动所有服务（包括slave节点，需要做免密码登录）
@@ -1043,6 +1069,18 @@ hive.metastore.uri=thrift://localhost:9083
 
 
 
+### 跨源查询
+
+这里我使用mysql的表和pg的表进行关联查询。
+
+```sql
+SELECT a.employee_id,b.id, a.full_name,b.repo_name FROM mysql.foodmart.employee a,postgresql.public.github_repo b where a.employee_id = b.id;
+```
+
+![](https://raw.githubusercontent.com/huzekang/picbed/master/20190628141632.png)
+
+
+
 ## Kafka
 
 #### 下载解压
@@ -1094,3 +1132,11 @@ log.dirs=/Users/huzekang/opt/hadoop-cdh/data/kafka/kafka-logs
    可以看到👆上面输入的都显示出来了。
 
    ![](https://raw.githubusercontent.com/huzekang/picbed/master/20190627231059.png)
+
+3. **查看有哪些topic**
+
+4. ```
+   bin/kafka-topics.sh --list --zookeeper localhost:2181
+   ```
+
+   ![](https://raw.githubusercontent.com/huzekang/picbed/master/20190701213535.png)

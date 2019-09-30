@@ -6,30 +6,56 @@
 
 sql on hbase
 
+
+
 ## 下载压缩包
+
 ```shell
 wget http://mirror.bit.edu.cn/apache/phoenix/apache-phoenix-4.14.0-cdh5.14.2/bin/apache-phoenix-4.14.0-cdh5.14.2-bin.tar.gz
 ```
 
 
+
 ## 拷贝phoenix server jar包到hbase/lib包
+
 进入到phoenix的安装目录把phoenix-4.12.0-HBase-1.2-server.jar 拷贝到集群中每个节点( 主节点也要拷贝 )的 hbase 的 lib 目录下
 ```
 cp phoenix-4.14.1-HBase-1.2-server.jar /opt/hadoop/hbase-1.2.4/lib
 ```
 
 
+
+## 配置hbase
+
+hbase-site.xml
+
+如果不加入该配置，则无法在Phoenix中建立索引。
+
+```xml
+<property>
+  <name>hbase.regionserver.wal.codec</name>
+  <value>org.apache.hadoop.hbase.regionserver.wal.IndexedWALEditCodec</value>
+</property>
+```
+
+
+
 ## 重启Hbase,hdfs
+
 ```shell
 $ ../hbase-1.2.4/bin/stop-hbase.sh
 $ ../hadoop-2.7.3/sbin/stop-dfs.sh
 ```
 
+
+
 ## 启动phoenix 客户端
+
  启动命令：phoenix-4.14.0-HBase-1.2/bin/sqlline.py  
 ```
 ./sqlline.py localhost
 ```
+
 
 
 ## 验证phoenix
