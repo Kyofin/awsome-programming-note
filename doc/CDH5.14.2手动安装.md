@@ -192,6 +192,17 @@ The following instructions assume that 1. ~ 4. steps of [the above instructions]
            <name>yarn.nodemanager.aux-services</name>
            <value>mapreduce_shuffle</value>
        </property>
+     
+       <property>
+   <name>yarn.resourcemanager.hostname</name>
+   <value>huzekangdeMacBook-Pro.local</value>
+   </property>
+   
+   
+   <property>
+       <name>yarn.nodemanager.auxservices.mapreduce.shuffle.class</name>
+       <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+   </property>
    </configuration>
    ```
 
@@ -207,7 +218,9 @@ The following instructions assume that 1. ~ 4. steps of [the above instructions]
 
    - ResourceManager - `http://localhost:8088/`
 
-     ![](https://raw.githubusercontent.com/huzekang/picbed/master/20190618175325.png)
+     ![](https://i.loli.net/2019/11/19/K98zDSentWXEOGH.png)
+     
+     启动要看到节点才是成功的。如果节点健康状态为false，检查一下硬盘够不够，我清理了mac的硬盘空间后就没事了。
 
 3. Run a MapReduce job.
 
@@ -849,9 +862,88 @@ public class HiveJdbcTest {
 
 
 
+### 开启update和delete操作
+
+默认在hive中没有默认开启支持单条插入（update）、更新以及删除（delete）操作，需要自己配置。而在默认情况下，当用户如果使用update和delete操作时，会出现如下情况：
+
+```shell
+hive> update dp set name='beijing' where id=1159;
+FAILED: SemanticException [Error 10294]: Attempt to do update or delete using transaction manager that does not support these operations.
+```
+
+**需要在hive-site.xml中加入配置**
+
+```xml
+<!-- 加入下面配置可以进行update和delete操作 -->
+  <property>
+<name>hive.support.concurrency</name>
+    <value>true</value>
+  </property>
+
+    <property>
+    <name>hive.enforce.bucketing</name>
+    <value>true</value>
+      </property>
+
+  <property>
+    <name>hive.exec.dynamic.partition.mode</name>
+    <value>nonstrict</value>
+  </property>
+
+    <property>
+    <name>hive.txn.manager</name>
+    <value>org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</value>
+  </property>
+
+  <property>
+    <name>hive.compactor.initiator.on</name>
+    <value>true</value>
+  </property>
+
+    <property>
+    <name>hive.compactor.worker.threads</name>
+    <value>1</value>
+  </property>
+
+```
 
 
-## Spark
+
+再次执行update和delete操作，依然报错。
+
+```shell
+hive> update ods_user set sex = 1 where id = 10000000;
+FAILED: SemanticException [Error 10297]: Attempt to do update or delete on table hf_ods.ods_user that does not use an AcidOutputFormat or is not bucketed
+hive> delete from ods_user  where id = 10000000;
+FAILED: SemanticException [Error 10297]: Attempt to do update or delete on table hf_ods.ods_user that does not use an AcidOutputFormat or is not bucketed
+
+```
+
+
+
+如果一个表要实现update和delete功能，该表就必须支持ACID，而支持ACID，就必须满足以下条件：
+
+- 表的存储格式必须是ORC（STORED AS ORC）；
+
+- 表必须进行分桶（CLUSTERED BY (col_name, col_name, …) INTO num_buckets BUCKETS）；
+
+- Table property中参数transactional必须设定为True（tblproperties(‘transactional’=‘true’)）；
+
+  修改建表语句:
+
+  ```sql
+  create table if not exists tablename (
+    id bigint,
+    age bigint  COMMENT '年龄',
+    name String COMMENT '姓名'
+  ) COMMENT '用户表'
+  partitioned by (year string)
+  clustered by (id) into 2 buckets
+  row format delimited fields terminated by '\t'
+  stored as orc TBLPROPERTIES('transactional'='true');
+  ```
+
+  
 
 ### Spark standalone集群模式部署
 
@@ -907,6 +999,41 @@ sbin/start-slave.sh spark://10.130.2.220:7077
 可以观察到起来了一个master和worker进程。
 
 ![](https://raw.githubusercontent.com/huzekang/picbed/master/20190626112610.png)
+
+
+
+### Livy spark
+
+用于spark的交互式编程和提交批处理作业到saprk集群
+
+1. 下载
+
+   ```
+   wget http://mirrors.tuna.tsinghua.edu.cn/apache/incubator/livy/0.6.0-incubating/apache-livy-0.6.0-incubating-bin.zip
+   ```
+
+2. 修改conf目录下的`livy-env.sh`文件
+
+   ```
+   export SPARK_HOME=/opt/spark-2.4.4-bin-hadoop2.6
+   export HADOOP_CONF_DIR=/etc/hadoop/conf
+   ```
+
+3. 修改conf目录下的`livy.conf`文件
+
+   ```
+   # What spark master Livy sessions should use.
+    livy.spark.master = spark://cdh01:7077
+   
+   # What spark deploy mode Livy sessions should use.
+    livy.spark.deploy-mode = cluster
+   ```
+
+4. 使用postman引入测试api
+
+   https://www.getpostman.com/collections/ee87d500b01a06343d03
+
+
 
 
 
