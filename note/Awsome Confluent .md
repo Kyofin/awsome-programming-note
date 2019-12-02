@@ -1,4 +1,4 @@
-# confluent使用教程
+# Awsome Confluent  
 
 ## 参考文档
 
@@ -605,6 +605,7 @@ ksql> create stream test1 as select * from clickstream where userid >30;
 
 - org.apache.kafka.connect.json.JsonConverter
 - org.apache.kafka.connect.storage.StringConverter
+- io.confluent.connect.avro.AvroConverter
 
 
 
