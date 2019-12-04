@@ -104,25 +104,25 @@ control-center is [UP]
 #### Kafka
 
 ```
-confluent local log kafka 
+confluent local log kafka -- -f
 ```
 
 #### Zookeeper
 
 ```
-confluent local log zookeeper 
+confluent local log zookeeper -- -f
 ```
 
 #### Kafka connect
 
 ```
-confluent local log connect 
+confluent local log connect -- -f
 ```
 
 #### ksql-server
 
 ```
-confluent local log ksql-server 
+confluent local log ksql-server  -- -f
 ```
 
 
@@ -601,11 +601,13 @@ ksql> create stream test1 as select * from clickstream where userid >30;
 
 ## Kafka conncet convert
 
-用于message定义key和value。
+用于新增connect时指定message的key和value的转换器。
 
 - org.apache.kafka.connect.json.JsonConverter
 - org.apache.kafka.connect.storage.StringConverter
-- io.confluent.connect.avro.AvroConverter
+- io.confluent.connect.avro.AvroConverter（不写默认就是）
+
+![](https://i.loli.net/2019/12/02/73ehSlp9BUk1x4i.png)
 
 
 
@@ -707,6 +709,10 @@ curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" 
 
 默认不设置value和key的convert就是**avro**，因此对应的topic是有schema的。可以参考上面的`kafka connect kafka`。
 
+默认情况下，`poll interval`是5000ms，因此会每隔5s就执行以bulk操作。**所以会导致kafka中数据重复**。所以要应该设置长一点。
+
+![](https://i.loli.net/2019/12/02/s5RghVT6MFpL4uO.png)
+
 使用的**bulk模式**，即对指定表全量导入。
 
 ```
@@ -735,7 +741,11 @@ curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" 
 
 ### 配置sink从kafka到mysql
 
-这里会自动建表。只能选择单一topic数据。
+这里会自动建表。
+
+只能选择单一topic数据。
+
+默认情况下，建表的表名和数据库名是根据topic名的。
 
 ```
 {
