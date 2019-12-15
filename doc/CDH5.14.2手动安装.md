@@ -101,9 +101,9 @@ The following instructions are to run a **MapReduce job locally**. If you want t
      $ bin/hdfs namenode -format
    ```
 
-   ![](https://raw.githubusercontent.com/huzekang/picbed/master/20190618172845.png)
+   ![](http://image-picgo.test.upcdn.net/img/20191216001215.png)
 
-2. Start NameNode daemon and DataNode daemon:
+   Start NameNode daemon and DataNode daemon:
 
    ```
      $ sbin/start-dfs.sh
@@ -126,35 +126,33 @@ The following instructions are to run a **MapReduce job locally**. If you want t
      $ bin/hdfs dfs -mkdir /user/<username>
    ```
 
-5. Copy the README.txt into the distributed filesystem:
+5. 上传README.txt到hdfs上:
 
    ```
-     $ bin/hdfs dfs -put README.txt /user/<username>
+     $ bin/hdfs dfs -put README.txt /user/README.txt
    ```
 
-6. Run some of the examples provided:
+6. 提交一个计算作业到hadoop(没配置yarn是使用local模式跑的):
 
    ```
-     $ bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0-cdh5.14.2.jar grep /user/huzekang/README.txt /user/huzekang/output 'dfs[a-z.]+'
+     $ bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0-cdh5.14.2.jar grep /user/README.txt /user/output 'dfs[a-z.]+'
    ```
 
-7. Examine the output files:
-
-   Copy the output files **from the distributed filesystem** to the **local filesystem** and examine them:
+7. 将计算结果目录从hdfs下载到本地:
 
    ```
-     $ bin/hdfs dfs -get /user/huzekang/output output
+  $ bin/hdfs dfs -get /user/output output
      $ ll output/
    ```
-
+   
    or
 
    View the output files on the distributed filesystem:
 
    ```
-     bin/hdfs dfs -ls /user/huzekang/output
+  bin/hdfs dfs -ls /user/huzekang/output
    ```
-
+   
 8. When you're done, stop the daemons with:
 
    ```
@@ -193,16 +191,24 @@ The following instructions assume that 1. ~ 4. steps of [the above instructions]
            <value>mapreduce_shuffle</value>
        </property>
      
-       <property>
-   <name>yarn.resourcemanager.hostname</name>
-   <value>huzekangdeMacBook-Pro.local</value>
-   </property>
-   
-   
    <property>
        <name>yarn.nodemanager.auxservices.mapreduce.shuffle.class</name>
        <value>org.apache.hadoop.mapred.ShuffleHandler</value>
    </property>
+     
+      <property>
+       <name>yarn.resourcemanager.address</name>
+       <value>127.0.0.1:8032</value>
+     </property>
+     <property>
+       <name>yarn.resourcemanager.scheduler.address</name>
+       <value>127.0.0.1:8030</value>
+     </property>
+     <property>
+       <name>yarn.resourcemanager.resource-tracker.address</name>
+       <value>127.0.0.1:8031</value>
+     </property>
+   
    </configuration>
    ```
 
@@ -224,7 +230,13 @@ The following instructions assume that 1. ~ 4. steps of [the above instructions]
 
 3. Run a MapReduce job.
 
+   ```
+     $ bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0-cdh5.14.2.jar grep /user/README.txt /user/output 'dfs[a-z.]+'
+   ```
+
    ![](https://raw.githubusercontent.com/huzekang/picbed/master/20190618175408.png)
+
+   ![](http://image-picgo.test.upcdn.net/img/20191216003421.png)
 
 4. When you're done, stop the daemons with:
 
@@ -616,11 +628,19 @@ cp conf/hive-default.xml.template conf/hive-site.xml
         <value>eLN8QGV4g3LINDrFrsDKvCCyHapLOPCR</value>
     </property>
 
+  <!-- 使用远程metastore -->
     <property>
         <name>hive.metastore.uris</name>
         <value>thrift://localhost:9083</value>
         <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
     </property>
+
+  <!-- 修复问题![](http://image-picgo.test.upcdn.net/img/20191215213150.png) -->
+  <!-- hiveserver2开放给jdbc的端口 -->
+  <property>
+    <name>hive.server2.thrift.port</name>
+    <value>10003</value>
+  </property>
 
     <!-- 设置hdfs上保存的数据仓库路径 -->
     <property>
@@ -678,17 +698,29 @@ hive.root.logger=INFO,DRFA
 
 
 
-### 启动HiveServer服务
+### 启动MetaStoreServer服务
 
-启动MetaStore Service
+- 启动MetaStore Service
 
 ```
-bin/hive --service metastore &
+bin/hive --service metastore -p 9083 &
 ```
 
-第一次启动会在mysql中创建表，可能速度会慢点。可以通过看日志文件观察是否报错。
+第一次启动会在mysql中创建表，可能速度会慢点。
+
+如上启动，会启动端口号默认9083的metastore服务，也可以通过-p指定端口号。
+
+可以通过看日志文件观察是否报错。
+
+- 直接启动cli即可
+
+```
+$HIVE_HOME/bin/hive
+```
 
 
+
+### 启动HiveServer服务，使其他服务可以通过thrift接入hive
 
 启动HiveServer
 
@@ -709,6 +741,26 @@ bin/hdfs dfs -chmod -R 755 /tmp
 ```
 
 ![](https://raw.githubusercontent.com/huzekang/picbed/master/20190623163014.png)
+
+
+
+### 启动报错
+
+![](http://image-picgo.test.upcdn.net/img/20191215213150.png)
+
+10000是hiveserver2开放给jdbc服务的端口，这里被占用了。
+
+加入配置即可
+
+```xml
+  <!-- hiveserver2开放给jdbc的端口 -->
+<property>
+       <name>hive.server2.thrift.port</name>
+      <value>10003</value>
+ </property>
+```
+
+
 
 
 
@@ -735,6 +787,10 @@ insert into helloword values(11,'peter');
 打开hdfs可以观察到数据存放到指定的目录了。
 
 ![](https://raw.githubusercontent.com/huzekang/picbed/master/20190623161342.png)
+
+可以在yarn上看到mr。
+
+![](http://image-picgo.test.upcdn.net/img/20191216003757.png)
 
 
 

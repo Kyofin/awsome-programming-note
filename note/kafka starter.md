@@ -90,3 +90,57 @@
  rmr /brokers/topics/【topic name】即可
 ```
 
+
+
+## Kafka connect
+
+### 介绍
+
+Kafka connect 只是Apache Kafka提出的一种kafka数据流处理的框架，目前有很多开源的、优秀的实现，比较著名的是Confluent平台，支持很多Kafka connect的实现，例如Elasticsearch(Sink)、HDFS(Sink)、JDBC等等
+
+![kafka_connect](http://www.itrensheng.com/upload/2019/7/kafka_connect-669224bae2e44ae6a149ef820c1b70c1.png)
+
+### 预期目标
+
+将指定topic的数据通过kafka开源组件connect输出到本地文件中。
+
+### 编辑配置
+
+- connect-standalone.properties
+
+  ![](http://image-picgo.test.upcdn.net/img/20191207223224.png)
+
+- Connect-file-sink.properties
+
+  ![](http://image-picgo.test.upcdn.net/img/20191207223304.png)
+
+
+
+### 运行standalone模式
+
+```
+~/opt/hadoop-cdh/kafka_2.12-2.1.1 » bin/connect-standalone.sh config/connect-standalone.properties   config/connect-file-sink.properties
+```
+
+使用kafka console provider输入json。
+
+![](http://image-picgo.test.upcdn.net/img/20191207223612.png)
+
+查看文件已经被修改了。
+
+![](http://image-picgo.test.upcdn.net/img/20191207223558.png)
+
+### 收集connect日志到文件
+
+设置kafka/config目录下的该文件。
+
+![](http://image-picgo.test.upcdn.net/img/20191207232102.png)
+
+```
+log4j.appender.stdfile=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.stdfile.DatePattern='.'yyyy-MM-dd-HH
+log4j.appender.stdfile.File=${kafka.logs.dir}/stdout.log
+log4j.appender.stdfile.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdfile.layout.ConversionPattern=[%d] %p %m (%c)%n
+```
+

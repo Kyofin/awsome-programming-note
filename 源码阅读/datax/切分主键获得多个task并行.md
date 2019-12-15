@@ -1,6 +1,6 @@
 # 切分主键获得多个task并行
 
-当我们设置jdbc job的channel大于1时，datax是会帮我们切分task。
+当我们设置jdbc job的channel大于1时，datax是会帮我们切分task。channel越多，task越多。
 
 ![](https://i.loli.net/2019/12/04/2zECpQw7BTUD1x4.png)
 

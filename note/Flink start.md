@@ -112,3 +112,29 @@ https://mp.weixin.qq.com/s/KfuAZv2G0682NNzHv0iFfQ【flink客户端操作的 5 �
 (accepting,3)
 (act,1)
 ```
+
+
+
+### 2. Start a local  flink cluster
+
+##### 启动flink
+
+```
+~/opt/flink-1.9.1 » bin/start-cluster.sh                                                                               
+Starting cluster.
+Starting standalonesession daemon on host huzekangdembp.
+Starting taskexecutor daemon on host huzekangdembp.
+```
+
+打开`http://localhost:8081/#/job/running`即可看到flink 集群。
+
+![](http://image-picgo.test.upcdn.net/img/20191204222452.png)
+
+##### 跑example
+
+使用flink 集群计算wordcount
+
+```
+ flink run ~/opt/flink-1.9.1/examples/batch/WordCount.jar --input ~/opt/flink-1.9.1/README.txt
+```
+

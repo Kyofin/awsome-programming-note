@@ -70,7 +70,11 @@ control-center is [UP]
 
 #### 工作目录
 
-默认情况下confluent启动后会在在`/tmp`目录建工做目录，各个组件的数据和日志都能在这里找到。但其实我们不用自己找日志看，可以用**confluent cli**的**log**命令查看，下面有说到。
+默认情况下confluent启动后会在工作目录下做各个组件的目录，各个组件的数据和日志都能在这里找到。但其实我们不用自己找日志看，可以用**confluent cli**的**log**命令查看，下面有说到。
+
+![](http://image-picgo.test.upcdn.net/img/20191207213715.png)
+
+打开可以看到各个组件的运行数据和日志。
 
 ![](https://i.loli.net/2019/12/02/MI3LlwpYBg7WKet.png)
 
