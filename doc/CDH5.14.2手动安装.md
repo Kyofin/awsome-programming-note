@@ -141,7 +141,7 @@ The following instructions are to run a **MapReduce job locally**. If you want t
 7. 将计算结果目录从hdfs下载到本地:
 
    ```
-  $ bin/hdfs dfs -get /user/output output
+    $ bin/hdfs dfs -get /user/output output
      $ ll output/
    ```
    
@@ -150,7 +150,7 @@ The following instructions are to run a **MapReduce job locally**. If you want t
    View the output files on the distributed filesystem:
 
    ```
-  bin/hdfs dfs -ls /user/huzekang/output
+    bin/hdfs dfs -ls /user/huzekang/output
    ```
    
 8. When you're done, stop the daemons with:
@@ -999,7 +999,69 @@ FAILED: SemanticException [Error 10297]: Attempt to do update or delete on table
   stored as orc TBLPROPERTIES('transactional'='true');
   ```
 
-  
+
+## Spark
+
+### Spark on yarn
+
+#### 介绍
+
+**Spark on YARN分为两种**： YARN cluster和 YARN client
+
+- **如果需要返回数据到client就用YARN client模式。**
+
+- **如果数据存储到hdfs就用YARN cluster模式。**
+
+ 
+
+#### 启动shell client on yarn
+
+```
+./bin/spark-shell --master yarn --deploy-mode client
+```
+
+如果启动成功，则可以看到yarn的资源被分配了。
+
+![](http://image-picgo.test.upcdn.net/img/20191216121317.png)
+
+​	点进去可以看到该node有一个application在运行，并启动了三个容器。
+
+![](http://image-picgo.test.upcdn.net/img/20191216121503.png)
+
+![](http://image-picgo.test.upcdn.net/img/20191216121434.png)
+
+此时在spark shell 中写代码即可。
+
+![](http://image-picgo.test.upcdn.net/img/20191216121551.png)
+
+如果启动报错：
+
+![](http://image-picgo.test.upcdn.net/img/20191216123157.png)
+
+则加入环境变量：
+
+```
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop
+```
+
+#### 使用yarn资源运行spark作业
+
+```
+./bin/spark-submit --class org.apache.spark.examples.SparkPi \
+    --master yarn \
+    --deploy-mode cluster \
+    --driver-memory 2g \
+    --executor-memory 2g \
+    --executor-cores 1 \
+    --queue thequeue \
+    examples/jars/spark-examples*.jar \
+    10
+```
+
+![](http://image-picgo.test.upcdn.net/img/20191216135332.png)
+
+
 
 ### Spark standalone集群模式部署
 
@@ -1017,7 +1079,37 @@ FAILED: SemanticException [Error 10297]: Attempt to do update or delete on table
    sbin/start-all.sh
    ```
 
-   
+
+### 使用spark-sql工具访问hive
+
+1. 复制hive-site.xml到spark 配置目录
+
+   ```
+   ~/opt/hadoop-cdh/hive-1.1.0-cdh5.14.2 » cp conf/hive-site.xml ~/opt/spark-2.4.4-bin-hadoop2.6/conf
+   ```
+
+2. 启动spark-sql工具
+
+   ```
+   ~/opt/spark-2.4.4-bin-hadoop2.6 » bin/spark-sql
+   ```
+
+   ![](http://image-picgo.test.upcdn.net/img/20191216011331.png)
+
+3. 创建表
+
+   ```
+   CREATE TABLE mytest3 (id bigint, name string)  
+    USING HIVE OPTIONS(fileFormat 'PARQUET')  
+   ```
+
+4. 插入数据
+
+   ```
+   INSERT INTO mytest3 VALUES (1,"zhang"), (2,"tank")  
+   ```
+
+   ![](http://image-picgo.test.upcdn.net/img/20191216012023.png)
 
 ### Spark集群启动命令汇总
 

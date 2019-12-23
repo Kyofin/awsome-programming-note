@@ -105,3 +105,177 @@ df.show(1,20,true)
 ```
 
 ![](https://i.loli.net/2019/11/20/GYyEVTj8I7b4gS6.png)
+
+
+
+## Spark-sql工具操作hive
+
+在conf目录下放入hive-stie.xml后使用`bin/spark-sql`即可。
+
+可以在启动时加入master即可指定spark standalone资源。
+
+![](http://image-picgo.test.upcdn.net/img/20191223092548.png)
+
+
+
+## 开启thriftserver启动spark-sql远程服务
+
+### 启动
+
+- 使用yarn启动
+
+  设置环境变量`export HADOOP_CONF_DIR=/etc/hadoop/conf`。
+
+  ```shell
+  ./sbin/start-thriftserver.sh \
+  				--hiveconf hive.server2.thrift.port=14000 \
+          --hiveconf hive.exec.mode.local.auto=true  \
+          --hiveconf hive.auto.convert.join=true     \
+          --hiveconf hive.mapjoin.smalltable.filesize=50000000 \
+          --name thriftserver    \
+          --master yarn-client \
+          --driver-cores    5   \
+          --driver-memory   5G  \
+          --executor-memory 5g \
+          --total-executor-cores 10\
+          --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
+          --conf spark.kryoserializer.buffer.max.mb=1024 \
+          --conf spark.storage.memoryFraction=0.2
+  ```
+
+  启动端口是14000，即可用jdbc连接。
+
+  ![](http://image-picgo.test.upcdn.net/img/20191223100247.png)
+
+- 使用spark-alone模式启动
+
+  ```
+  ./sbin/start-thriftserver.sh \
+  				--hiveconf hive.server2.thrift.port=14000 \
+          --hiveconf hive.exec.mode.local.auto=true  \
+          --hiveconf hive.auto.convert.join=true     \
+          --hiveconf hive.mapjoin.smalltable.filesize=50000000 \
+          --name thriftserver    \
+          --master spark://cdh01:7077 \
+          --driver-cores    5   \
+          --driver-memory   5G  \
+          --executor-memory 5g \
+          --total-executor-cores 10\
+          --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
+          --conf spark.kryoserializer.buffer.max.mb=1024 \
+          --conf spark.storage.memoryFraction=0.2
+  ```
+
+  ![](http://image-picgo.test.upcdn.net/img/20191223194248.png)
+
+- 使用local模式启动
+
+  ```
+  ./sbin/start-thriftserver.sh --hiveconf hive.server2.thrift.port=14000
+  ```
+
+### 连接使用
+
+```
+./bin/beeline
+Beeline version 1.2.1.spark2 by Apache Hive
+beeline> !connect jdbc:hive2://localhost:14000
+```
+
+![](http://image-picgo.test.upcdn.net/img/20191223094140.png)
+
+### 关闭服务
+
+```
+[root@cdh01 spark-2.4.4-bin-hadoop2.6]# sbin/stop-thriftserver.sh 
+stopping org.apache.spark.sql.hive.thriftserver.HiveThriftServer2
+```
+
+
+
+### troubleshooting
+
+使用beeline插入数据时报错。
+
+![](http://image-picgo.test.upcdn.net/img/20191223132409.png)
+
+#### 解决方法：
+
+在使用beeline连接时输入用户名和密码。
+
+此处的root用户是linux的用户，需先同步到hdfs才可以使用，即`hdfs dfsadmin -refreshUserToGroupsMappings`
+
+![](http://image-picgo.test.upcdn.net/img/20191223132546.png)
+
+
+
+## spark ui界面分析
+
+部署spark alone
+
+```
+cdh01 (主节点)
+cdh02 (slave)
+cdh03 (slave)
+cdh04 (slave)
+cdh05 (slave)
+```
+
+在cdh01启动spark alone模式集群。
+
+启动集群后，通过启动thriftserver的应用来观察UI。
+
+```
+./sbin/start-thriftserver.sh \
+				--hiveconf hive.server2.thrift.port=14000 \
+        --hiveconf hive.exec.mode.local.auto=true  \
+        --hiveconf hive.auto.convert.join=true     \
+        --hiveconf hive.mapjoin.smalltable.filesize=50000000 \
+        --name thriftserver    \
+        --master spark://cdh01:7077 \
+        --driver-cores    5   \
+        --driver-memory   5G  \
+        --executor-memory 5g \
+        --total-executor-cores 10\
+        --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
+        --conf spark.kryoserializer.buffer.max.mb=1024 \
+        --conf spark.storage.memoryFraction=0.2
+```
+
+上面指定了每个executor内存为5g，总共核数10。
+
+![](http://image-picgo.test.upcdn.net/img/20191223202259.png)
+
+打开spark ui。可以发现drvier指定的内存和核数在spark首页都是看不到的。它统计的都是worker工作节点的占用资源，即非cdh01的节点。
+
+
+
+测试一个很耗时的操作，读hive上的一张大数目为1000000010的表并写入到新表中。
+
+```
+create table hdfs2_id as select *,id as id2 from hdfswriter2;
+```
+
+![](http://image-picgo.test.upcdn.net/img/20191223203035.png)
+
+
+
+再进入该sql 的作业页面。
+
+![](http://image-picgo.test.upcdn.net/img/20191223203123.png)
+
+
+
+可以看到该作业用了38分钟。
+
+![](http://image-picgo.test.upcdn.net/img/20191223203515.png)
+
+
+
+点击进入stage页面。
+
+可以看到每个工作节点都读了不同数目的数据。
+
+并且task任务的总数和`--total-executor-cores 10`是相等的。即使这里有四个节点，但是只有0和1工作节点分到3个任务，而2和3都只分到2个。因此，我们能调整这个参数来挺高并发数。
+
+![](http://image-picgo.test.upcdn.net/img/20191223204009.png)
