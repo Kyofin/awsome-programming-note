@@ -1,5 +1,11 @@
 # spark必知必会
 
+## spark必须知道的概念
+
+一个**Job**被拆分成若干个**Stage**，每个Stage执行一些计算，产生一些中间结果。它们的目的是最终生成这个Job的计算结果。而每个**Stage**是一个task set，包含若干个**task**。Task是Spark中最小的工作单元，在一个executor上完成一个特定的事情。
+
+
+
 ## Spark submit 不同的模式运行
 
 ### 1. 运行在 yarn集群上
@@ -266,13 +272,13 @@ create table hdfs2_id as select *,id as id2 from hdfswriter2;
 
 
 
-可以看到该作业用了38分钟。
+可以看到该作业用了38分钟。只有一个stage4，而且stage4耗时最长。
 
 ![](http://image-picgo.test.upcdn.net/img/20191223203515.png)
 
 
 
-点击进入stage页面。
+点击进入stage4的监控页面。
 
 可以看到每个工作节点都读了不同数目的数据。
 
