@@ -1,5 +1,25 @@
 # Hive starter
 
+创建分区表
+
+```
+create table logs(ts bigint,line string)partitioned by (dt String,country string)
+```
+
+创建表后不会生成分区目录
+
+![](http://image-picgo.test.upcdn.net/img/20191224104106.png)
+
+插入数据后才会有分区目录，可以看到数据只包含非分区列的值。
+
+```
+insert into logs values(1,'/root/hive/partitions/file1','2018','gz')
+```
+
+![](http://image-picgo.test.upcdn.net/img/20191224134756.png)
+
+
+
 添加分区
 
 ```sql
