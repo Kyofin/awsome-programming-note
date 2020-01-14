@@ -118,9 +118,56 @@ df.show(1,20,true)
 
 在conf目录下放入hive-stie.xml后使用`bin/spark-sql`即可。
 
-可以在启动时加入master即可指定spark standalone资源。
+可以在启动时加入master即可指定spark standalone资源(非必须)。
 
 ![](http://image-picgo.test.upcdn.net/img/20191223092548.png)
+
+
+
+### **创建表**
+
+#### **1，以文本方式存储**
+
+```
+create external table mytest1(id bigint, name string)  row format delimited fields terminated by ','  location 'hdfs://bigserver1:9000/test/spark/tank3';  
+```
+
+**这种方式创建的表，是以文本的形式存储的**
+
+#### **2，以parquet存储**
+
+```
+CREATE TABLE mytest3 (id bigint, name string)  USING HIVE OPTIONS(fileFormat 'PARQUET')  location 'hdfs://cdh04:8020/test/spark/tank4';  
+```
+
+**这种创建表的方式，指定了文件存储方式，在用scala读取时会方便一些。**但要注意有写入该文件夹**权限**。
+
+**在这里要注意一点，如果没有指定location的话，默认会装到SPARK thrift的warehouse**。
+
+写入数据（这样写很慢，建议用hdfs写入再查）
+
+```
+INSERT INTO mytest3 VALUES (1,"zhang"), (2,"tank")  
+```
+
+
+
+## 内置函数
+
+共267个
+
+![](http://image-picgo.test.upcdn.net/img/20200110185755.png)
+
+```
+--查看所有内置函数
+SHOW FUNCTIONS ;
+--查看某个函数的描述
+DESCRIBE FUNCTION !;
+ --查看某个函数的具体使用方法
+DESCRIBE FUNCTION EXTENDED !;
+```
+
+
 
 
 

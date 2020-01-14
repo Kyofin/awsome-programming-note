@@ -25,3 +25,29 @@ usermod -a -G hive root
 hdfs dfsadmin -refreshUserToGroupsMappings
 ```
 
+
+
+## 解除namenode的safemode
+
+使用hdfs用户执行
+
+```
+hadoop dfsadmin -safemode leave
+```
+
+
+
+## 修改hdfs的权限
+
+```
+sudo bin/hadoop dfs -chmod -R 755 /
+```
+
+
+
+## 修改hdfs文件的所有者
+
+```
+sudo bin/hadoop fs -chown -R larry /
+```
+

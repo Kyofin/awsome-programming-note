@@ -6,6 +6,12 @@ https://docs.cloudera.com/HDPDocuments/Ambari-2.7.4.0/bk_ambari-installation/con
 
 
 
+## 各个组件的tutorial
+
+https://www.cloudera.com/tutorials.html
+
+
+
 ## 安装包下载
 
 ambari-2.7.3.0：
@@ -227,7 +233,7 @@ service firewalld stop
 防火墙自启动关闭
 
 ```
-service diasbled firewalld 
+ systemctl disable firewalld
 ```
 
 
@@ -293,7 +299,7 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/httpd.service t
 创建hdp-util解压到的目录
 
 ```ruby
-[root@master ~]# mkdir /var/www/html/hdp/HDP-UTILS-1.1.0.22
+[root@master ~]# mkdir /var/www/html/hdp/HDP-UTILS-1.1.0.22/ 
 ```
 
 上传之前下载包到`/var/www/html/hdp`，后解压
@@ -324,7 +330,7 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/httpd.service t
 #### （2）设置ambari的yum源
 
 ```
-vi ambari/centos7/2.7.3.0-139/ambari.repo
+vim ambari/centos7/2.7.3.0-139/ambari.repo
 ```
 
 替换掉这两个地址
@@ -362,7 +368,7 @@ priority=1
 #### （3） 设置HDP的yum源
 
 ```ruby
-[root@master hdp]# vi HDP/centos7/3.1.0.0-78/hdp.repo
+[root@master hdp]# vim HDP/centos7/3.1.0.0-78/hdp.repo
 ```
 
 修改红色框的内容变成我们在浏览器中可访问的地址。
@@ -415,6 +421,24 @@ priority=1
 
 
 
+## 创建软连接(非必)
+
+home目录最大，可以先创建文件夹hadoop
+
+```
+[root@cdh01 home]# mkdir hadoop
+```
+
+再在根目录创建软连接，指向home的hadoop目录。
+
+```
+ln -s /home/hadoop/   /
+```
+
+
+
+
+
 ## 安装ambari-server(主节点node1)
 
 ### 安装命令
@@ -423,7 +447,7 @@ priority=1
 yum -y install ambari-server
 ```
 
-### 开始配置ambari
+### 开始配置ambari(手动建表)
 
 ```
 ambari-server setup
@@ -431,11 +455,11 @@ ambari-server setup
 
 然后就在控制台填信息。留空则会选择括号中的默认值。
 
-这里主要填自定义的jdk地址，还有选择ambari的数据库。
+这里主要填自定义的**jdk**地址`/usr/java/default`，还有选择ambari的数据库。
 
-我这里选择了pg，因为pg编码没那么多问题，而且也不用上传驱动。
+数据库这里选择了**pg**，因为pg编码没那么多问题，而且也不用上传驱动。
 
-需手动创建pg数据库，然后把提示的脚本拿去数据库中执行建表。
+需手动创建pg数据库`ambari`，然后把提示的脚本拿去数据库中执行**建表**。
 
 ```ruby
 [root@node1 /]# ambari-server setup
@@ -512,7 +536,7 @@ Ambari 使用 `8080` 端口提供服务，这个端口很多情况下会被 tomc
 
 修改配置文件 `/etc/ambari-server/conf/ambari.properties`
 
-```
+```shell
 client.api.port=<port_number>
 ```
 
@@ -548,6 +572,13 @@ GPL较小，直接用官方的就可以了。
 
 ```
 http://public-repo-1.hortonworks.com/HDP-GPL/centos7/3.x/updates/3.1.0.0
+```
+
+其他仅供参考，实际要写httpd安装的ip：
+
+```
+http://192.168.1.95/hdp/HDP/centos7/3.1.0.0-78/
+http://192.168.1.95/hdp/HDP-UTILS-1.1.0.22/HDP-UTILS/centos7/1.1.0.22/
 ```
 
 
@@ -613,3 +644,38 @@ http://public-repo-1.hortonworks.com/HDP-GPL/centos7/3.x/updates/3.1.0.0
 5.本次安装遇到的几个问题，这些文中都有提到，别遗漏了：
 	1）密钥的一定别弄错了是id_rsa这个文件，而不是id_rsa.pub。
 	2）**ambari-agent一定要先安装**，不然确定主机那一波非常慢。
+
+
+
+
+
+## 卸载（未完成）
+
+1、通过ambari将集群中的所用组件都关闭，如果关闭不了，直接kill-9 XXX
+
+2、 关闭ambari-server，ambari-agent
+
+```sql
+ambari-server stop
+ambari-agent stop
+```
+
+3、yum删除所有Ambari组件
+
+```sql
+yum remove -y hadoop_2* hdp-select* ranger_2* zookeeper* bigtop*atlas-metadata* ambari* spark* slide* strom* hive*
+```
+
+以上命令可能不全，执行完一下命令后，再执行
+
+```sql
+ rpm –qa|grep Ambari版本号
+```
+
+ 如版本号：2.7.3.0
+
+ 查看是否还有没有卸载的，如果有，继续通过#yum remove XXX卸载
+
+4、删除postgresql数据库中各组件的数据
+
+​     postgresql软件卸载后，其数据还保留在硬盘中，需要把这部分数据删除掉，如果不删除掉，重新安装ambari-server后，有可能还应用以前的安装数据，而这些数据时错误数据，所以需要删除掉。
