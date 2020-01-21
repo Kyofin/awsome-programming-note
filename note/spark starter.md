@@ -6,6 +6,38 @@
 
 
 
+## spark源码编译
+
+命令行设置代理翻墙
+
+```
+export http_proxy=10.0.0.17:1087
+```
+
+使用spark项目内置脚本执行编译
+
+```
+~/openSource/spark(02b510728c) » ./build/mvn -DskipTests clean package      
+```
+
+编译成功后使用idea打开，并将pom.xml移入maven栏目，项目会自动加载。
+
+但如果直接启动example模块的例子还是会报错。
+
+![](http://image-picgo.test.upcdn.net/img/20200115140027.png)
+
+是因为pom.xml的spark依赖都是provided范围。需要修改idea的启动选项。
+
+![](http://image-picgo.test.upcdn.net/img/20200115140042.png)
+
+并指定master，就可以正常运行了。
+
+![](http://image-picgo.test.upcdn.net/img/20200115140258.png)
+
+
+
+
+
 ## Spark submit 不同的模式运行
 
 ### 1. 运行在 yarn集群上
@@ -19,31 +51,29 @@
 - Spark on YARN 集群上 yarn-cluster 模式运行
 
   ```SHELL
-  ~/opt/spark-2.4.4-bin-hadoop2.6 » ./bin/spark-submit --class org.apache.spark.examples.SparkPi \                                                              huzekang@huzekangdeMacBook-Pro
+  ./bin/spark-submit --class org.apache.spark.examples.SparkPi \
       --master yarn \
       --deploy-mode cluster \
       --driver-memory 2g \
-      --executor-memory 1g \
+      --executor-memory 2g \
       --executor-cores 1 \
-      --queue thequeue \
       examples/jars/spark-examples*.jar \
       10
   ```
-
   
 
+  
 - spark on yarn 集群上 yarn-client模式运行
 
   ```SHELL
-  ~/opt/spark-2.4.4-bin-hadoop2.6 » ./bin/spark-submit --class org.apache.spark.examples.SparkPi \                                                              huzekang@huzekangdeMacBook-Pro
+  ./bin/spark-submit --class org.apache.spark.examples.SparkPi \
       --master yarn \
       --deploy-mode client \
       --driver-memory 2g \
-      --executor-memory 1g \
+      --executor-memory 2g \
       --executor-cores 1 \
-      --queue thequeue \
       examples/jars/spark-examples*.jar \
-      100
+      10
   ```
 
 

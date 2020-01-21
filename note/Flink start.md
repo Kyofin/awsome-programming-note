@@ -26,13 +26,68 @@ https://mp.weixin.qq.com/s/KfuAZv2G0682NNzHv0iFfQ【flink客户端操作的 5 �
 
 
 
-## 运行flink集群的方式
+## 提交flink作业
+
+#### ON YARN
+
+在本地提交作业到远程yarn，不用在本地启动flink的任何服务。
+
+```
+ ./bin/flink run -m yarn-cluster -yn 1 -yjm 1024 -ytm 1024 ./examples/batch/WordCount.jar
+```
+
+通过环境变量的指定可以在本地以client模式提交到远程的yarn集群中执行。**注意的是提交到yarn需要hadoop的一些jar包，所以本地环境要装hadoop，并在环境变量中指定。**
+
+![](http://image-picgo.test.upcdn.net/img/20200121093101.png)
+
+由于提交到yarn，输出返回都直接打印在控制台，虽然执行过程中可以在yarn上跳转到该作业的flink web查看每个步骤的耗时等参数，但是作业结束后就不能查看了，因为作业结束flink web也会随之关闭。
+
+![](http://image-picgo.test.upcdn.net/img/20200121093930.png)
+
+这时候就需要在**本地启动history sever来记录作业**了。
+
+在flink yml中配置如下：
+
+```yml
+jobmanager.archive.fs.dir: hdfs://cdh04:8020/flink/v1.0copy/completed-jobs/
+ 
+# The address under which the web-based HistoryServer listens.
+historyserver.web.address: 0.0.0.0
+ 
+# The port under which the web-based HistoryServer listens.
+historyserver.web.port: 8088
+ 
+# Comma separated list of directories to monitor for completed jobs.
+historyserver.archive.fs.dir: hdfs://cdh04:8020/flink/v1.0copy/completed-jobs/,hdfs://cdh04:8020/flink/v1.0copy/h-completed-jobs/,hdfs://cdh04:8020/flink/completed-jobs/
+ 
+# Interval in milliseconds for refreshing the monitored directories.
+historyserver.archive.fs.refresh-interval: 1000
+
+```
+
+![](http://image-picgo.test.upcdn.net/img/20200121094159.png)
+
+然后单独启动flink history sever即可，其他服务不用在本地启动。
+
+```
+~/opt/flink-1.9.1 » bin/historyserver.sh start                                                                
+```
+
+这时候跑的作业就会记录下来了。
+
+![](http://image-picgo.test.upcdn.net/img/20200121094414.png)
+
+实际的记录则根据配置保存在远程的hdfs上。
+
+![](http://image-picgo.test.upcdn.net/img/20200121094550.png)
+
+
+
+## 运行long time flink集群的方式
 
 
 
 ### 1. 使用yarn模式运行flink集群
-
-
 
 ##### 启动yarn
 
