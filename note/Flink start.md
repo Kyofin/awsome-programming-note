@@ -10,7 +10,17 @@ http://us.mirrors.quenda.co/apache/flink/flink-1.9.1/flink-1.9.1-bin-scala_2.11.
 
 ## 参考文档
 
-https://mp.weixin.qq.com/s/KfuAZv2G0682NNzHv0iFfQ【flink客户端操作的 5 种模式】
+**[ververica flink forward](https://ververica.cn/developers-resources/)**
+
+**[Flink on Yarn原理](https://www.infoq.cn/article/UFeFrdqSlqI3HyRHbPNm)**
+
+##### [flink客户端操作的 5 种模式](https://mp.weixin.qq.com/s/KfuAZv2G0682NNzHv0iFfQ)
+
+###### [Apache Flink 零基础入门](https://segmentfault.com/a/1190000020300020)
+
+##### [Apache Flink 1.10.0 最新发布，年度最大规模版本升级！](https://blog.csdn.net/qq_18769269/article/details/104290984)
+
+##### [5 个 TableEnvironment 我该用哪个？](https://mp.weixin.qq.com/s?__biz=MzU3Mzg4OTMyNQ==&mid=2247484827&idx=1&sn=0b9da36050532b8adb4e6ad11a0f4a23&chksm=fd3b8bd9ca4c02cf310a84c464e7a882742fbcaa1ed62520c2d045eb2e0bcd28278e85433c38&scene=0&xtrack=1&clicktime=1569728441&enterid=1569728441&ascene=7&)
 
 
 

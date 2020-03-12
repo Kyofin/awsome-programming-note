@@ -60,6 +60,18 @@ Caused by: org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.security.Acce
 
 
 
+## hbase
+
+### hdp默认的hbase在zookeeper的目录是hbase-unsecure
+
+                           ```
+ "zookeeper.znode.parent": "/hbase-unsecure"
+                           ```
+
+
+
+
+
 ## 大目录文件调整软连接
 
 ### ambari-infra-solr

@@ -8,6 +8,14 @@ sql on hbase
 
 
 
+## 文档
+
+阿里云phoenix使用文档
+
+https://help.aliyun.com/document_detail/53716.html?spm=a2c4g.11186623.4.2.4e961ff0lRqHUW
+
+
+
 ## 下载压缩包
 
 ```shell
@@ -49,7 +57,7 @@ $ ../hadoop-2.7.3/sbin/stop-dfs.sh
 
 
 
-## 启动phoenix 客户端
+## 启动phoenix 重客户端
 
  启动命令：phoenix-4.14.0-HBase-1.2/bin/sqlline.py  
 ```
@@ -58,11 +66,24 @@ $ ../hadoop-2.7.3/sbin/stop-dfs.sh
 
 
 
+## 启动phoenix 轻客户端
+
+需要启动phoenix query sever服务。它是一个jetty服务。
+
+```
+~/opt/hadoop-cdh/phoenix-4.14.0-cdh5.14.2-bin/bin(master*) » ./sqlline-thin.py http://129.28.191.99:8765
+```
+
+
+
+
+
 ## 验证phoenix
 
 ### 1）查看所有表
 输入 !tables ，查看都有哪些表。以下显示均为Phoenix系统表，系统表中维护了用户表的元数据信息。
-![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190418212032.png)
+
+![](http://image-picgo.test.upcdn.net/img/20200208145631.png)
 
 
 
@@ -74,7 +95,41 @@ $ ../hadoop-2.7.3/sbin/stop-dfs.sh
 
 如果需要将 HBase Shell 中创建的表格关联到 Phoenix 中查看，就需要在 Phoenix 中创建一个视图（View）做关联。
 
-### 2）退出Phoenix
+### 2）执行测试脚本
+
+脚本如下：
+
+```sql
+DROP TABLE IF EXISTS tt;
+CREATE TABLE tt(k VARCHAR PRIMARY KEY,v1 VARCHAR,v2 VARCHAR) SALT_BUCKETS=4;
+CREATE INDEX v1_indx ON tt(v1);
+CREATE INDEX v2_indx ON tt(v2);
+
+upsert into tt values('a1','b1','c');
+upsert into tt values('a2','b2','c');
+upsert into tt values('a2','b2','c');
+
+select * from tt;
+select * from v1_indx;
+select * from v2_indx;
+
+delete from tt;
+select * from tt;
+```
+
+使用轻客户端执行脚本：
+
+```sh
+~/opt/hadoop-cdh/phoenix-4.14.0-cdh5.14.2-bin/bin(master*) » ./sqlline-thin.py http://129.28.191.99:8765 test.sql
+```
+
+![](http://image-picgo.test.upcdn.net/img/20200213130912.png)
+
+可以看到**建立索引**其实就是添加了一个索引表，用于存放索引字段的值和其对应的主键。
+
+
+
+### 3）退出Phoenix
 输入 !exit 命令(PS：Phoenix早期版本如(2.11版本)需输入!quilt才可退出，目前高版本已改为!exit命令)
 
 
