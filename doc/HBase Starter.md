@@ -1,4 +1,4 @@
-# HBase伪分布式使用
+# HBase Starter
 
 [TOC]
 
@@ -10,7 +10,7 @@ wget https://archive.apache.org/dist/hbase/1.2.4/hbase-1.2.4-bin.tar.gz
 
 
 
-## 修改hbase相关文件
+## 伪分布式运行修改hbase相关文件
 
 ### conf/hbase-env.sh
 
@@ -133,13 +133,35 @@ HBase的Web界面 <http://134.175.29.194:16010/>
 
 ## shell操作hbase
 
-## 常用命令
+### 准备导入数据脚本
 
-![](https://raw.githubusercontent.com/peter1040080742/picbed/master/20190418215047.png)
-
-### 使用hbase shell
+hbase_test.sh
 
 ```
-$ hbase shell
+for ((i=1; i<=100; i ++))
+do
+        echo  put \'region_test\', \'row$i\', \'cf:a\', \'value1\' >> test.txt
+        echo  put \'region_test\', \'row$i\', \'cf:b\', \'value2\' >> test.txt
+        echo  put \'region_test\', \'row$i\', \'cf:c\', \'value3\' >> test.txt
+        echo  put \'region_test\', \'row$i\', \'cf:d\', \'value4\' >> test.txt
+done
+```
+
+### 执行脚本sh hbase_test.txt
+
+```
+sh hbase_test.txt
+```
+
+### hbase shell导入
+
+```
+hbase shell test.txt
+```
+
+### 计数
+
+```
+count 'region_test'
 ```
 

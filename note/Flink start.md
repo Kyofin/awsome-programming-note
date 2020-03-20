@@ -22,7 +22,7 @@ http://us.mirrors.quenda.co/apache/flink/flink-1.9.1/flink-1.9.1-bin-scala_2.11.
 
 ##### [5 个 TableEnvironment 我该用哪个？](https://mp.weixin.qq.com/s?__biz=MzU3Mzg4OTMyNQ==&mid=2247484827&idx=1&sn=0b9da36050532b8adb4e6ad11a0f4a23&chksm=fd3b8bd9ca4c02cf310a84c464e7a882742fbcaa1ed62520c2d045eb2e0bcd28278e85433c38&scene=0&xtrack=1&clicktime=1569728441&enterid=1569728441&ascene=7&)
 
-
+**[Flink Table API&SQL的概念和通用API  (重点)](https://my.oschina.net/u/2935389/blog/3023112)**
 
 ## flink shell使用方法
 
@@ -38,12 +38,12 @@ http://us.mirrors.quenda.co/apache/flink/flink-1.9.1/flink-1.9.1-bin-scala_2.11.
 
 ## 提交flink作业
 
-#### ON YARN
+####  YARN PER JOB
 
 在本地提交作业到远程yarn，不用在本地启动flink的任何服务。
 
 ```
- ./bin/flink run -m yarn-cluster -yn 1 -yjm 1024 -ytm 1024 ./examples/batch/WordCount.jar
+ ./bin/flink run -m yarn-cluster ./examples/batch/WordCount.jar
 ```
 
 通过环境变量的指定可以在本地以client模式提交到远程的yarn集群中执行。**注意的是提交到yarn需要hadoop的一些jar包，所以本地环境要装hadoop，并在环境变量中指定。**
@@ -113,7 +113,9 @@ historyserver.archive.fs.refresh-interval: 1000
 
 ![](https://i.loli.net/2019/11/19/F3ia5ZXrv8cbLlk.png)
 
-这里分配了yarn资源的1g内存和1核开启一个flink 集群。上面的YARN session是在Hadoop YARN环境下启动一个Flink cluster集群，里面的资源是可以共享给其他的Flink作业
+注意：在启动完后，只有一个1G的jobmanager，没有taskmanager的，只有在提交作业时才会像yarn申请资源启动。
+
+上面的YARN session是在Hadoop YARN环境下启动一个Flink cluster集群，里面的资源是可以共享给其他的Flink作业
 
 此时打开flink jobmanager web interface地址可以看到如下画面。
 
@@ -125,7 +127,9 @@ historyserver.archive.fs.refresh-interval: 1000
 
 
 
-##### 跑一个example
+
+
+##### 运行example
 
 上传文件到hdfs
 
@@ -180,6 +184,18 @@ historyserver.archive.fs.refresh-interval: 1000
 
 
 
+可以在运行作业的时候指定特定配置。如下，指定了并行度为6，就会向yarn申请更多资源（container）。但是注意，并行度越高其实不一定越快。而且如果申请不了更多资源，flink作业运行过程中也会出错。
+
+```
+bin/flink run -p 4 -c com.alibaba.alink.ALSExample  /Volumes/Samsung_T5/huzekang/opensource/Alink/examples/target/alink_examples_flink-1.10_2.11-1.1-SNAPSHOT.jar
+```
+
+![](http://image-picgo.test.upcdn.net/img/20200315124324.png)
+
+
+
+
+
 ### 2. Start a local  flink cluster
 
 ##### 启动flink
@@ -203,3 +219,38 @@ Starting taskexecutor daemon on host huzekangdembp.
  flink run ~/opt/flink-1.9.1/examples/batch/WordCount.jar --input ~/opt/flink-1.9.1/README.txt
 ```
 
+
+
+## 并行度对比
+
+这里执行了一个数据质量分析的作业，读的phoenix的表，数据量两百多w。
+
+在作业中使用了row key对phoenix表做了切分读入（即分段读）。
+
+### 并行度为8
+
+两分半跑完。
+
+![](http://image-picgo.test.upcdn.net/img/20200319144750.png)
+
+### 并行度为6
+
+三分钟跑完。
+
+![](http://image-picgo.test.upcdn.net/img/20200319144343.png)
+
+### 并行度为3
+
+程序6分钟就执行完了。时间多数花在读。
+
+```
+flink-1.10.0/bin/flink run -p 3 -c com.yibo.flink.DataQualityJobStart flink-jobs-1.1-SNAPSHOT.jar -p 4 -dburl http://cdh05:8765 -readTableNames ODS_3_EMPLOYEES_SALARIES_20200313091118   -userId 1
+```
+
+![](http://image-picgo.test.upcdn.net/img/20200319143433.png)
+
+### 并行度为1
+
+同样的程序，时间却要18分钟。
+
+![](http://image-picgo.test.upcdn.net/img/20200319143535.png)
