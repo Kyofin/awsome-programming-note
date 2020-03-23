@@ -1,3 +1,13 @@
+## 参考文档
+
+[Example Ansible Playbook](https://gpdb.docs.pivotal.io/6-5/install_guide/ansible-example.html#Untitled1)
+
+[Initializing a Greenplum Database System](https://gpdb.docs.pivotal.io/6-5/install_guide/init_gpdb.html#topic1)
+
+[pgAdmin 4 with Greenplum Database](https://gpdb.docs.pivotal.io/510/admin_guide/access_db/topics/g-pgadmin-for-greenplum-database.html)
+
+
+
 ## 服务器准备
 
 阿里云2台。

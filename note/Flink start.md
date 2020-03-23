@@ -46,7 +46,7 @@ http://us.mirrors.quenda.co/apache/flink/flink-1.9.1/flink-1.9.1-bin-scala_2.11.
  ./bin/flink run -m yarn-cluster ./examples/batch/WordCount.jar
 ```
 
-通过环境变量的指定可以在本地以client模式提交到远程的yarn集群中执行。**注意的是提交到yarn需要hadoop的一些jar包，所以本地环境要装hadoop，并在环境变量中指定。**
+通过环境变量的指定可以在本地以client模式提交到远程的yarn集群中执行。**注意的是提交到yarn需要hadoop的一些jar包，所以本地环境要装hadoop，并在环境变量中指定。**而且也要注意`conf/flink-conf.yaml`配置的core和内存是否大于yarn的容器资源，超过就申请不了容器，就启动不了作业了。
 
 ![](http://image-picgo.test.upcdn.net/img/20200121093101.png)
 
@@ -90,6 +90,28 @@ historyserver.archive.fs.refresh-interval: 1000
 实际的记录则根据配置保存在远程的hdfs上。
 
 ![](http://image-picgo.test.upcdn.net/img/20200121094550.png)
+
+
+
+也可以在**yarn上查看flink的执行日志**。
+
+首先根据控制台输出获取yarn上的appid。
+
+![](http://image-picgo.test.upcdn.net/img/20200322170724.png)
+
+打开浏览器，访问容器的地址。注意替换`1584856682455_0011`为控制台输出的appid。
+
+各类日志：
+
+http://huzekangdembp:8042/node/containerlogs/container_1584856682455_0011_01_000001/huzekang/
+
+log日志：
+
+http://huzekangdembp:8042/node/containerlogs/container_1584856682455_0011_01_000001/huzekang/jobmanager.log/?start=0
+
+
+
+
 
 
 
@@ -218,6 +240,14 @@ Starting taskexecutor daemon on host huzekangdembp.
 ```
  flink run ~/opt/flink-1.9.1/examples/batch/WordCount.jar --input ~/opt/flink-1.9.1/README.txt
 ```
+
+可以使用-m参数指定flink ui地址。例如：
+
+```shell
+bin/flink run -m 192.168.5.8:8081 -c com.alibaba.alink.ALSExample  /Volumes/Samsung_T5/huzekang/opensource/Alink/examples/target/alink_examples_flink-1.10_2.11-1.1-SNAPSHOT.jar
+```
+
+
 
 
 
