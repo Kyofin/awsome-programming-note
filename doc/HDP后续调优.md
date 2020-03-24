@@ -135,6 +135,16 @@ ln -s /home/log_data/log/ /var/log
 
 
 
+### spark应用查不了hive中的表
+
+![img](https://img2018.cnblogs.com/blog/1018938/201904/1018938-20190420171931251-1256469962.png)我在 Spark-shell 里创建了一张 hive 表，发现其创建的位置是 spark.sql.warehouse.dir 指向的目录。
+
+解决问题参考：
+
+https://www.cnblogs.com/langfanyun/p/10741775.html
+
+
+
 ### spark使用的用户无法访问hive建的表数据
 
 ```ruby
