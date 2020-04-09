@@ -42,8 +42,10 @@ docker run -d -p 9091:9091 prom/pushgateway
 ### grafana
 
 ```
-docker run -d -p 3000:3000 grafana/grafana
+docker run -d -p 3000:3000 --name grafana   grafana/grafana
 ```
+
+默认账号密码都是admin
 
 
 

@@ -4,6 +4,8 @@
 
 https://docs.cloudera.com/HDPDocuments/Ambari-2.7.4.0/bk_ambari-installation/content/ch_Getting_Ready.html
 
+https://docs.cloudera.com/HDPDocuments/
+
 
 
 ## 各个组件的tutorial

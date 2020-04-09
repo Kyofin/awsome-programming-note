@@ -2,12 +2,6 @@
 
 
 
-## 下载1.9版本
-
-http://us.mirrors.quenda.co/apache/flink/flink-1.9.1/flink-1.9.1-bin-scala_2.11.tgz
-
-
-
 ## 参考文档
 
 **[ververica flink forward](https://ververica.cn/developers-resources/)**
@@ -24,7 +18,55 @@ http://us.mirrors.quenda.co/apache/flink/flink-1.9.1/flink-1.9.1-bin-scala_2.11.
 
 **[Flink Table API&SQL的概念和通用API  (重点)](https://my.oschina.net/u/2935389/blog/3023112)**
 
-## flink shell使用方法
+**[Flink SQL-Client探索](https://blog.csdn.net/qq_36076256/article/details/89927268)**
+
+[**flink SQL Client Beta官方文档**](https://ci.apache.org/projects/flink/flink-docs-stable/dev/table/sqlClient.html)
+
+[flink cli官方文档](https://ci.apache.org/projects/flink/flink-docs-release-1.10/ops/cli.html)
+
+
+
+## Flink sql client
+
+#### 下载sql client测试docker compose
+
+https://github.com/huzekang/sql-training
+
+
+
+#### Docker启动测试环境
+
+```
+docker-compose up
+```
+
+
+
+#### Docker启动容器中的sqlclient
+
+```
+docker-compose exec sql-client ./sql-client.sh
+```
+
+![](http://image-picgo.test.upcdn.net/img/20200325120435.png)
+
+测试sql。
+
+```
+Flink SQL> select count(1) from DriverChanges;
+```
+
+访问http://localhost:8081/#/overview可以看到每个sql提交的作业。
+
+![](http://image-picgo.test.upcdn.net/img/20200325120743.png)
+
+终端中也可以看到数量在不断增加。
+
+![](http://image-picgo.test.upcdn.net/img/20200325120816.png)
+
+
+
+## flink shell
 
 ```
 ~/opt/flink-1.9.1 » bin/start-scala-shell.sh local
@@ -38,12 +80,12 @@ http://us.mirrors.quenda.co/apache/flink/flink-1.9.1/flink-1.9.1-bin-scala_2.11.
 
 ## 提交flink作业
 
-####  YARN PER JOB
+####  YARN PER JOB (推荐)
 
 在本地提交作业到远程yarn，不用在本地启动flink的任何服务。
 
-```
- ./bin/flink run -m yarn-cluster ./examples/batch/WordCount.jar
+```shell
+ [root@cdh05 flink-1.10.0]#  ./bin/flink run -m yarn-cluster  -p 8 -ys 8 -ynm happy  -yjm 1024m -ytm 4096m ./examples/batch/WordCount.jar
 ```
 
 通过环境变量的指定可以在本地以client模式提交到远程的yarn集群中执行。**注意的是提交到yarn需要hadoop的一些jar包，所以本地环境要装hadoop，并在环境变量中指定。**而且也要注意`conf/flink-conf.yaml`配置的core和内存是否大于yarn的容器资源，超过就申请不了容器，就启动不了作业了。
@@ -241,7 +283,7 @@ Starting taskexecutor daemon on host huzekangdembp.
  flink run ~/opt/flink-1.9.1/examples/batch/WordCount.jar --input ~/opt/flink-1.9.1/README.txt
 ```
 
-可以使用-m参数指定flink ui地址。例如：
+可以使用`-m`参数将作业提交到远程flink 集群中执行。例如：
 
 ```shell
 bin/flink run -m 192.168.5.8:8081 -c com.alibaba.alink.ALSExample  /Volumes/Samsung_T5/huzekang/opensource/Alink/examples/target/alink_examples_flink-1.10_2.11-1.1-SNAPSHOT.jar
@@ -284,3 +326,111 @@ flink-1.10.0/bin/flink run -p 3 -c com.yibo.flink.DataQualityJobStart flink-jobs
 同样的程序，时间却要18分钟。
 
 ![](http://image-picgo.test.upcdn.net/img/20200319143535.png)
+
+
+
+## 集成prometheus监控
+
+将flink目录下opt里的jar放入lib目录中。
+
+```
+~/opt/flink-1.10.0/opt » cp flink-metrics-prometheus-1.10.0.jar ../lib                     
+```
+
+配置flink，添加下面内容。
+
+这里指定了pushgateway的地址，flink会将自己的指标推给pushgateway。
+
+```properties
+# 监控
+metrics.reporter.promgateway.class: org.apache.flink.metrics.prometheus.PrometheusPushGatewayReporter
+metrics.reporter.promgateway.host: localhost
+metrics.reporter.promgateway.port: 9091
+metrics.reporter.promgateway.jobName: flink_metrics
+metrics.reporter.promgateway.randomJobNameSuffix: true
+metrics.reporter.promgateway.deleteOnShutdown: false
+```
+
+启动pushgateway。
+
+配置prometheus.yml
+
+```
+# scape配置
+scrape_configs:
+
+- job_name: 'flink'
+  static_configs:
+  - targets: ['192.168.1.36:9091']
+```
+
+启动prometheus。
+
+启动grafana。在grafana中引入社区看板`11049`
+
+![](http://image-picgo.test.upcdn.net/img/20200330155811.png)
+
+
+
+## Flink1.10读写hive
+
+编写测试代码
+
+```java
+public class HiveStart {
+	public static void main(String[] args) throws Exception {
+		final EnvironmentSettings settings = EnvironmentSettings.newInstance().useBlinkPlanner().inBatchMode().build();
+		final TableEnvironment btableEnv = TableEnvironment.create(settings);
+
+		final HiveCatalog hiveCatalog = new HiveCatalog(
+				"myhive",
+				"default",
+				"/Users/huzekang/Downloads/yibo(CLUSTER)-configs/HIVE_CLIENT",
+				"2.1.0");
+		btableEnv.registerCatalog("myhive",hiveCatalog);
+		btableEnv.useCatalog("myhive");
+		// 查询
+		final Table table = btableEnv.sqlQuery("select * from csv_salaries where emp_no ='1'");
+		table.printSchema();
+		final List<Row> rows = TableUtils.collectToList(table);
+		System.out.println(rows);
+
+		// 插入
+		btableEnv.sqlUpdate("insert into csv_salaries select '2','2','2','2' ");
+
+		btableEnv.execute("");
+	}
+}
+
+```
+
+引入依赖
+
+```xml
+     <dependency>
+                    <groupId>org.apache.flink</groupId>
+                    <artifactId>flink-connector-hive_2.11</artifactId>
+                    <version>${flink.version}</version>
+                </dependency>
+
+                <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-mapreduce-client-core -->
+                <dependency>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-mapreduce-client-core</artifactId>
+                    <version>2.7.4</version>
+                </dependency>
+
+                <!-- Hive Dependency -->
+                <!-- https://mvnrepository.com/artifact/org.apache.hive/hive-exec -->
+                <dependency>
+                    <groupId>org.apache.hive</groupId>
+                    <artifactId>hive-exec</artifactId>
+                    <version>2.1.0</version>
+                </dependency>
+   <dependency>
+                    <groupId>org.apache.flink</groupId>
+                    <artifactId>flink-table-planner-blink_${scala.binary.version}</artifactId>
+                    <version>${flink.version}</version>
+                </dependency>
+```
+

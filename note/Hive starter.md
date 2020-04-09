@@ -185,6 +185,14 @@ show create table logs;
 
 
 
+### 级联删除数据库
+
+```
+drop database tpcds_bin_partitioned_orc_5  cascade;
+```
+
+
+
 ### 添加列
 
 ```
