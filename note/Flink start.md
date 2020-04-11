@@ -78,6 +78,42 @@ Flink SQL> select count(1) from DriverChanges;
 
 
 
+
+
+## Flink sql client查询hive
+
+1. 配置sql-client-defaults.yaml
+
+   配置execution。
+
+   ![](http://image-picgo.test.upcdn.net/img/20200409161116.png)
+
+   配置catalogs。
+
+   ![](http://image-picgo.test.upcdn.net/img/20200409161230.png)
+
+   
+
+2. 下载hive所需要依赖放入lib目录（这些依赖是根据官方文档hive Integration在maven仓库下载的）
+
+   ![](http://image-picgo.test.upcdn.net/img/20200409161148.png)
+
+   
+
+3. 启动sql client。
+
+   ```
+   ~/opt/flink-1.10.0 » bin/sql-client.sh embedded                                       
+   ```
+
+   此时已经可以看到hive上的表了。
+
+   ![](http://image-picgo.test.upcdn.net/img/20200409161418.png)
+
+
+
+
+
 ## 提交flink作业
 
 ####  YARN PER JOB (推荐)
@@ -372,7 +408,7 @@ scrape_configs:
 
 
 
-## Flink1.10读写hive
+## Flink1.10 java读写hive
 
 编写测试代码
 
@@ -432,5 +468,30 @@ public class HiveStart {
                     <artifactId>flink-table-planner-blink_${scala.binary.version}</artifactId>
                     <version>${flink.version}</version>
                 </dependency>
+```
+
+
+
+## flink 配置优化
+
+**配置flink-conf.yml文件。**
+
+### 增加自定义jvm参数
+
+开启远程debug。一些jvm参数也可以这样传递。
+
+```java
+env.java.opts.taskmanager: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 "
+env.java.opts.jobmanager: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5006"
+
+```
+
+### 调整taskmanager内存
+
+```properties
+# 调大整个taskmanager的应用内存
+taskmanager.memory.process.size: 9024m
+# 相对增大metaspace大小，防止加载过多class 时 ，metaspace OOM。
+taskmanager.memory.jvm-metaspace.size : 1024m
 ```
 
