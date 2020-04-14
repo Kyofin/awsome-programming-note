@@ -259,6 +259,10 @@ DESCRIBE FUNCTION EXTENDED !;
 
 ### 连接使用
 
+启动后可以看打印的日志查看thrift server的jdbc连接端口。
+
+![](http://image-picgo.test.upcdn.net/img/20200412162130.png)
+
 ```
 ./bin/beeline
 Beeline version 1.2.1.spark2 by Apache Hive
@@ -289,6 +293,140 @@ stopping org.apache.spark.sql.hive.thriftserver.HiveThriftServer2
 此处的root用户是linux的用户，需先同步到hdfs才可以使用，即`hdfs dfsadmin -refreshUserToGroupsMappings`
 
 ![](http://image-picgo.test.upcdn.net/img/20191223132546.png)
+
+
+
+## 使用spark shell读写sqlserver数据
+
+启动shell带上sqlserver驱动。
+
+```shell
+ spark-shell --master yarn  --jars sqljdbc4-4.0.jar --driver-class-path sqljdbc4-4.0.jar
+```
+
+读sqlserver数据，写出到sqlserver表中，不设置`mode`默认是建一张新表，所以已存在同名表写出时会报错。
+
+其中`List("FPatientInfoId >1  ").toArray`就是读取数据的分区条件。
+
+```scala
+scala> import java.util.Properties
+import java.util.Properties
+
+scala> val pros = new Properties
+pros: java.util.Properties = {}
+
+scala> pros.put("user","sa")
+res1: Object = null
+
+scala> pros.put("password","yibosa@142")
+res2: Object = null
+
+scala> pros.put("databaseName","medicare_ShiFuErYiLiaoZhongXin")
+res3: Object = null
+
+scala> val predicateDs = spark.read.jdbc("jdbc:sqlserver://192.168.1.142:1433","TPatientInfo",List("FPatientInfoId >1  ").toArray,pros)
+predicateDs: org.apache.spark.sql.DataFrame = [FPatientInfoId: bigint, FAccountDate: timestamp ... 51 more fields]
+
+scala> predicateDs.show
+
+scala> predicateDs.createOrReplaceTempView("TPatientInfo")
+
+scala> 
+```
+
+
+
+
+
+## 使用thrifserver查询mysql数据
+
+### 参考文档
+
+https://ieevee.com/tech/2016/07/22/spark-mysql.html
+
+### 示例
+
+启动时使用`—-jars`让executor带上mysql依赖。
+
+使用`--driver-class-path`让driver带上mysql依赖。
+
+只使用–driver-class-path还不够，这个参数只会给driver指定jar包，但是Spark JDBC访问Mysql是发生在各个Excutor上的，还需要–jars为各个Excutor指定jar包，否则会报“no suitable driver found”。
+
+```shell
+~/opt/spark-2.4.4-bin-hadoop2.6 » ./sbin/start-thriftserver.sh --jars mysql-connector-java-8.0.11.jar --driver-class-path mysql-connector-java-8.0.11.jar
+
+starting org.apache.spark.sql.hive.thriftserver.HiveThriftServer2, logging to /Users/huzekang/opt/spark-2.4.4-bin-hadoop2.6/logs/spark-huzekang-org.apache.spark.sql.hive.thriftserver.HiveThriftServer2-1-huzekangdembp.out
+```
+
+使用beeline连接。
+
+![](http://image-picgo.test.upcdn.net/img/20200412162922.png)
+
+#### **单分区表**
+
+创建spark侧表关联mysql侧**单分区表**表。
+
+```sql
+0: jdbc:hive2://localhost:10003> CREATE TEMPORARY TABLE dept USING org.apache.spark.sql.jdbc OPTIONS (url "jdbc:mysql://localhost/test?user=root&password=eWJmP7yvpccHCtmVb61Gxl2XLzIrRgmT", dbtable "dept");
+```
+
+注册完即可使用spark sql查询了。
+
+```
+0: jdbc:hive2://localhost:10003> select * from dept;
+```
+
+![](http://image-picgo.test.upcdn.net/img/20200412163055.png)
+
+由于指定了表只有**1个分区**，所以`select count`的时候，只会起1个task。
+
+插入数据。
+
+```scala
+0: jdbc:hive2://localhost:10003> insert into dept select t.* from (select 5,5) t;
++---------+--+
+| Result  |
++---------+--+
++---------+--+
+No rows selected (0.552 seconds)
+0: jdbc:hive2://localhost:10003> select * from dept;
++-----+------------+--+
+| id  | dept_name  |
++-----+------------+--+
+| 22  | ddit调度     |
+| 3   | new_bin2   |
+| 5   | 5          |
++-----+------------+--+
+3 rows selected (0.136 seconds)
+```
+
+将MySQL的数据导入到本地hive表`xxx`中
+
+```
+0: jdbc:hive2://localhost:10003> create table xxx as select * from dept;
++---------+--+
+| Result  |
++---------+--+
++---------+--+
+No rows selected (3.783 seconds)
+0: jdbc:hive2://localhost:10003> select * from xxx;
++-----+------------+--+
+| id  | dept_name  |
++-----+------------+--+
+| 22  | ddit调度     |
+| 3   | new_bin2   |
+| 5   | 5          |
++-----+------------+--+
+3 rows selected (0.28 seconds)
+```
+
+#### **指定Partition**
+
+```sql
+CREATE TEMPORARY TABLE jdbc_copy USING org.apache.spark.sql.jdbc OPTIONS (url "jdbc:mysql://localhost/test?user=root&password=eWJmP7yvpccHCtmVb61Gxl2XLzIrRgmT", dbtable "dept", partitionColumn "id", lowerBound "3", upperBound "22", numPartitions "6");
+```
+
+需要指定partitionColumn, lowerBound, upperBound, numPartitions，缺一不可。指定多个partition后，select count查询会起partition个TASK并发处理。从代码上来看，指定partition会在组织select语句的时候，带上whereClause，具体可以看JDBCRelation.columnPartition，但从实际体验上来看，貌似还是每个container全量抽取到内存了。
 
 
 
@@ -362,3 +500,80 @@ create table hdfs2_id as select *,id as id2 from hdfswriter2;
 并且task任务的总数和`--total-executor-cores 10`是相等的。即使这里有四个节点，但是只有0和1工作节点分到3个任务，而2和3都只分到2个。因此，我们能调整这个参数来挺高并发数。
 
 ![](http://image-picgo.test.upcdn.net/img/20191223204009.png)
+
+
+
+## spark编程常用例子
+
+### 初始测试数据
+
+#### scala
+
+这里定义了一个中包含多个元组的list作为df
+
+```scala
+scala> val  df =  List((1,"Peter"),(2,"kkk")).toDF("ID","NAME")
+df: org.apache.spark.sql.DataFrame = [ID: int, NAME: string]
+
+scala> df.show
++---+-----+
+| ID| NAME|
++---+-----+
+|  1|Peter|
+|  2|  kkk|
++---+-----+
+
+```
+
+
+
+
+
+### 添加列
+
+#### java
+
+重点是要引入`functions`类。
+
+```java
+import org.apache.spark.sql.functions;
+
+Dataset<Row> dataset = spark.sql(inputParameter.getEtlSql());
+Dataset<Row> addColDs = dataset.withColumn("newColName", functions.md5(functions.concat_ws(",", columnsArray)));
+				addColDs.show(false);
+```
+
+#### scala
+
+$跟的是字段名。
+
+函数直接使用即可。
+
+```scala
+scala>  val addCol = df.withColumn("foo", md5(concat_ws(",",$"ID",$"NAME")))
+addCol: org.apache.spark.sql.DataFrame = [ID: int, NAME: string ... 1 more field]
+ 
+ scala> addCol.show(false)
++---+-----+--------------------------------+
+|ID |NAME |foo                             |
++---+-----+--------------------------------+
+|1  |Peter|90483ca7ae25254b49695c9ae419670c|
+|2  |kkk  |9a55c34f22b91ec8bdb4ab23140aa545|
++---+-----+--------------------------------+
+
+
+```
+
+
+
+### 获取dataset结构
+
+#### java
+
+```java
+Dataset<Row> dataset = spark.sql(inputParameter.getEtlSql());
+StructType schema = dataset.schema()
+```
+
+spark sql中的schema是一个`org.apache.spark.sql.types.StructType`对象，包含了多个`org.apache.spark.sql.types.DataType`对象
+

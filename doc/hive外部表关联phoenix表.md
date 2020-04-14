@@ -98,4 +98,4 @@ TBLPROPERTIES (
 
 直接在spark shell中对该hive外部表插入数据。
 
-![](http://image-picgo.test.upcdn.net/img/20200411223158.png)
+![](http://image-picgo.test.upcdn.net/img/20200411224708.png)
