@@ -42,84 +42,6 @@ DESCRIBE FUNCTION EXTENDED !;
 
 
 
-## 表分区
-
-分区字段也是可以作为where条件使用的。
-
-### 创建分区表
-
-```
-create table logs(ts bigint,line string)partitioned by (dt String,country string)
-```
-
-创建表后不会生成分区目录
-
-![](http://image-picgo.test.upcdn.net/img/20191224104106.png)
-
-插入数据后才会有分区目录，可以看到数据只包含非分区列的值。
-
-```
-insert into logs values(1,'/root/hive/partitions/file1','2018','gz');
-
-insert into logs partition (dt='2018',country='china') values(2,'/root/hive/partitions/file2') ;
-```
-
-![](http://image-picgo.test.upcdn.net/img/20191224134756.png)
-
-
-
-### 查看分区
-
-```
-show partitions table_name;
-```
-
-
-
-### 导入数据并指定分区
-
-（没有这个分区则会自动创建分区）
-
-```
-LOAD DATA LOCAL INPATH '/Users/huzekang/tmp/data' OVERWRITE  INTO TABLE logs PARTITION (dt='2018',country='UK')
-```
-
-有LOCAL表示从本地文件系统加载（文件会被拷贝到HDFS中）
-无LOCAL表示从HDFS中加载数据（注意：文件直接被移动！！！而不是拷贝！！！ 并且。。文件名都不带改的。。）
-OVERWRITE  表示是否覆盖表中数据（或指定分区的数据）（没有OVERWRITE  会直接APPEND，而不会滤重!）
-
-
-
-### 添加分区
-
-```sql
-ALTER TABLE table_name ADD PARTITION (partCol = 'value1') location 'loc1'; //示例
-ALTER TABLE table_name ADD IF NOT EXISTS PARTITION (dt='20130101') LOCATION '/user/hadoop/warehouse/table_name/dt=20130101'; //一次添加一个分区
-
-ALTER TABLE page_view ADD PARTITION (dt='2008-08-08', country='us') location '/path/to/us/part080808' PARTITION (dt='2008-08-09', country='us') location '/path/to/us/part080809';  //一次添加多个分区
-```
-
- 
-
-### 删除分区
-
-```sql
-ALTER TABLE login DROP IF EXISTS PARTITION (dt='2008-08-08');
-
-ALTER TABLE page_view DROP IF EXISTS PARTITION (dt='2008-08-08', country='us');
-```
-
- 
-
-### 修改分区
-
-```
-ALTER TABLE table_name PARTITION (dt='2008-08-08') SET LOCATION "new location";
-ALTER TABLE table_name PARTITION (dt='2008-08-08') RENAME TO PARTITION (dt='20080808');
-```
-
- 
-
 ## 常用命令
 
 ### 查看表信息（最全）
@@ -195,7 +117,7 @@ drop database tpcds_bin_partitioned_orc_5  cascade;
 
 ### 添加列
 
-```
+```sql
 ALTER TABLE table_name ADD COLUMNS (col_name STRING);  //在所有存在的列后面，但是在分区列之前添加一列
 ```
 
@@ -203,7 +125,7 @@ ALTER TABLE table_name ADD COLUMNS (col_name STRING);  //在所有存在的列�
 
 ### 修改列
 
-```
+```sql
 CREATE TABLE test_change (a int, b int, c int);
 
 // will change column a's name to a1
@@ -218,9 +140,9 @@ ALTER TABLE test_change CHANGE b b1 INT FIRST;
 
 
 
-### 修改表属性
+### 修改表属性（内外表转换）
 
-```
+```sql
 alter table table_name set TBLPROPERTIES ('EXTERNAL'='TRUE');  //内部表转外部表 
 alter table table_name set TBLPROPERTIES ('EXTERNAL'='FALSE');  //外部表转内部表
 ```
@@ -229,13 +151,124 @@ alter table table_name set TBLPROPERTIES ('EXTERNAL'='FALSE');  //外部表转�
 
 ### 表的重命名
 
-```
+```sql
 ALTER TABLE table_name RENAME TO new_table_name
 ```
 
 
 
-## 移除表
+### 数据插入
+
+​        hive是基于Hadoop的一个数据仓库工具，可以将结构化的数据文件映射为一张数据库表，并提供简单的sql查询功能，可以将sql语句转换为MapReduce任务进行运行。通常hive包括以下四种数据导入方式：
+
+- 从本地文件系统中导入数据到Hive表；
+
+- 从HDFS上导入数据到Hive表；
+
+- 在创建表的时候通过从别的表中查询出相应的记录并插入到所创建的表中；
+
+- 从别的表中查询出相应的数据并导入到Hive表中。
+
+#### INSERT INTO
+
+使用样例
+
+ ```SQL
+   insert into tablename1 select a, b, c from tablename2;
+ ```
+
+#### INSERT OVERWRITE
+
+使用样例
+
+```sql
+  insert overwrite table tablename1 select a, b, c from tablename2
+```
+
+两者的异同
+        insert into 与 insert overwrite 都可以向hive表中插入数据，**但是insert into直接追加到表中数据的尾部，而insert overwrite会重写数据，既先进行删除，再写入。**如果存在分区的情况，insert overwrite会只重写当前分区数据。
+
+### 表分区
+
+分区字段也是可以作为where条件使用的。
+
+#### 创建分区表
+
+```sql
+create table logs(ts bigint,line string)partitioned by (dt String,country string)
+```
+
+创建表后不会生成分区目录
+
+![](http://image-picgo.test.upcdn.net/img/20191224104106.png)
+
+插入数据后才会有分区目录，可以看到数据只包含非分区列的值。
+
+```sql
+insert into logs values(1,'/root/hive/partitions/file1','2018','gz');
+
+insert into logs partition (dt='2018',country='china') values(2,'/root/hive/partitions/file2') ;
+```
+
+![](http://image-picgo.test.upcdn.net/img/20191224134756.png)
+
+
+
+#### 查看分区
+
+```sql
+show partitions table_name;
+```
+
+
+
+#### 导入数据并指定分区
+
+（没有这个分区则会自动创建分区）
+
+```
+LOAD DATA LOCAL INPATH '/Users/huzekang/tmp/data' OVERWRITE  INTO TABLE logs PARTITION (dt='2018',country='UK')
+```
+
+有LOCAL表示从本地文件系统加载（文件会被拷贝到HDFS中）
+无LOCAL表示从HDFS中加载数据（注意：文件直接被移动！！！而不是拷贝！！！ 并且。。文件名都不带改的。。）
+OVERWRITE  表示是否覆盖表中数据（或指定分区的数据）（没有OVERWRITE  会直接APPEND，而不会滤重!）
+
+
+
+#### 添加分区
+
+```sql
+ALTER TABLE table_name ADD PARTITION (partCol = 'value1') location 'loc1'; //示例
+ALTER TABLE table_name ADD IF NOT EXISTS PARTITION (dt='20130101') LOCATION '/user/hadoop/warehouse/table_name/dt=20130101'; //一次添加一个分区
+
+ALTER TABLE page_view ADD PARTITION (dt='2008-08-08', country='us') location '/path/to/us/part080808' PARTITION (dt='2008-08-09', country='us') location '/path/to/us/part080809';  //一次添加多个分区
+```
+
+ 
+
+#### 删除分区
+
+```sql
+ALTER TABLE login DROP IF EXISTS PARTITION (dt='2008-08-08');
+
+ALTER TABLE page_view DROP IF EXISTS PARTITION (dt='2008-08-08', country='us');
+```
+
+ 
+
+#### 修改分区
+
+```
+ALTER TABLE table_name PARTITION (dt='2008-08-08') SET LOCATION "new location";
+ALTER TABLE table_name PARTITION (dt='2008-08-08') RENAME TO PARTITION (dt='20080808');
+```
+
+ 
+
+## 
+
+### 移除表
 
 表结构，表数据都被移除。
 
@@ -245,9 +278,9 @@ drop table logs;
 
 
 
-## 删除表数据
+### 删除表数据
 
-### hive清空表中数据
+#### hive清空表中数据
 
 ```javascript
 truncate table table_name;
@@ -259,7 +292,7 @@ truncate table table_name;
 
 
 
-### hive按分区删除数据
+#### hive按分区删除数据
 
 ```javascript
 alter table table_name drop partition (partition_name='分区名')
@@ -271,9 +304,9 @@ alter table table_name drop partition (partition_name='分区名')
 
 
 
-### 删除部分满足条件的数据
+#### 删除部分满足条件的数据
 
-#### 一、有partition表
+##### 一、有partition表
 
 删除具体partition
 
@@ -290,13 +323,34 @@ INSERT OVERWRITE TABLE table_name PARTITION(dt='v3') SELECT column1,column2 FROM
 
 重新把对应的partition信息写一遍，通过WHERE 来限定需要留下的信息，没有留下的信息就被删除了。
 
-#### 二、无partiton表
+##### 二、无partiton表
 
 ```
 INSERT OVERWRITE TABLE dpc_test SELECT * FROM dpc_test WHERE age is not null;
 ```
 
 
+
+### 函数
+
+#### 创建udf
+
+```SQL
+add jar hdfs://cdh04:8020/escheduler/huzekang/udfs/hive-third-functions-2.2.1-shaded.jar
+create temporary function pinyin as 'com.github.aaronshan.functions.string.UDFChineseToPinYin'
+```
+
+有temporary则为临时的。
+
+
+
+#### 描述函数用法
+
+```SQL
+describe function extended md5;
+```
+
+![](http://image-picgo.test.upcdn.net/img/20200512174213.png)
 
 
 

@@ -4,7 +4,7 @@
 
 ### **1.kafka server启动:**  
 
-```
+```shell
 ./kafka-server-start.sh ../config/server.properties &
 ```
 
@@ -12,7 +12,7 @@
 
 ### **2.创建topic:** 
 
-```
+```shell
  ./kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic tes
 ```
 
@@ -20,7 +20,7 @@
 
 ### **3.查看kafka的topic：**
 
-```
+```shell
 ./kafka-topics.sh --zookeeper localhost:2181 --list
 ```
 
@@ -28,7 +28,7 @@
 
 ### **4.查看kafka某个topic下partition信息:** 
 
-```
+```shell
 ./kafka-topics.sh --describe --zookeeper localhost:2181 --topic test-topic
 ```
 
@@ -36,7 +36,7 @@
 
 ### **5.查看kafka的指定topic的描述:**  
 
-```
+```shell
 ./kafka-topics.sh --zookeeper localhost:2181 --describe --topic yq20171220
 ```
 
@@ -44,25 +44,38 @@
 
 ### **6.控制台向kafka生产数据:**  
 
+```shell
+./kafka-console-producer.sh --broker-list localhost:9092 --topic source --property "parse.key=true" --property "key.separator=@@@"
 ```
-./kafka-console-producer.sh --broker-list localhost:9092 --topic jason_20180519
+
+进入终端后，输入数据
+
+```shell
+> data_increment_data.kafka.edp.source.ums_extension.*.*.*@@@{"id": 1, "name": "test", "phone":"18074546423", "city": "Beijing", "time": "2017-12-22 10:00:00"}
+>data_increment_data.kafka.edp.source.ums_extension.*.*.*@@@{"id": 1, "name": "test", "phone":"18074546423", "city": "Beijing", "time": "2017-12-22 10:00:00"}
 ```
 
 
 
-### **7.控制台消费kafka的数据（也可以读全部数据）:**  
 
-```
-./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic dbhistory.inventory --from-beginning
+
+### 7.控制台消费kafka的数据（也可以读全部数据）:
+
+```shell
+./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic source --from-beginning
 ```
 
 加入参数`--from-beginning`会把数据全部都读出来，不加只读启动脚本后采集到的。
+
+![](http://image-picgo.test.upcdn.net/img/20200519093745.png)
+
+
 
 
 
 ### 8.查看topic下某分区偏移量的最小值: 
 
-```
+```shell
 ./kafka-run-class.sh kafka.tools.GetOffsetShell --topic test-topic  --time -1 --broker-list localhost:9092 --partitions 0
 ```
 

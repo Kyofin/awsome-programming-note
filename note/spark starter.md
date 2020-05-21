@@ -1,8 +1,149 @@
-# spark必知必会
+# Spark Starter
 
 ## spark必须知道的概念
 
 一个**Job**被拆分成若干个**Stage**，每个Stage执行一些计算，产生一些中间结果。它们的目的是最终生成这个Job的计算结果。而每个**Stage**是一个task set，包含若干个**task**。Task是Spark中最小的工作单元，在一个executor上完成一个特定的事情。
+
+
+
+
+
+## Spark sql常用调优参数
+
+参考[Adaptive Execution 让 Spark SQL 更高效更智能](http://www.jasongj.com/spark/adaptive_execution/)
+
+### 自动分配资源
+
+  spark.dynamicAllocation.enabled  =true
+
+### 自动设置 Shuffle Partition 
+
+- 可通过 `spark.sql.adaptive.enabled=true` 启用 Adaptive Execution 从而启用自动设置 Shuffle Reducer 这一特性。
+
+- 通过 `spark.sql.adaptive.shuffle.targetPostShuffleInputSize` 可设置每个 Reducer 读取的目标数据量，其单位是字节，默认值为 64 MB。
+
+### 自动调整join优化
+
+- 当 `spark.sql.adaptive.enabled` 与 `spark.sql.adaptive.join.enabled` 都设置为 `true` 时，开启 Adaptive Execution 的动态调整 Join 功能。
+
+- `spark.sql.adaptiveBroadcastJoinThreshold` 设置了 SortMergeJoin 转 BroadcastJoin 的阈值。如果不设置该参数，该阈值与 `spark.sql.autoBroadcastJoinThreshold` 的值相等
+
+### 自动数据倾斜优化
+
+- 将 `spark.sql.adaptive.skewedJoin.enabled` 设置为 true 即可自动处理 Join 时数据倾斜
+- `spark.sql.adaptive.skewedPartitionMaxSplits` 控制处理一个倾斜 Partition 的 Task 个数上限，默认值为 5
+- `spark.sql.adaptive.skewedPartitionRowCountThreshold` 设置了一个 Partition 被视为倾斜 Partition 的行数下限，也即行数低于该值的 Partition 不会被当作倾斜 Partition 处理。其默认值为 10L * 1000 * 1000 即一千万
+- `spark.sql.adaptive.skewedPartitionSizeThreshold` 设置了一个 Partition 被视为倾斜 Partition 的大小下限，也即大小小于该值的 Partition 不会被视作倾斜 Partition。其默认值为 64 * 1024 * 1024 也即 64MB
+- `spark.sql.adaptive.skewedPartitionFactor` 该参数设置了倾斜因子。如果一个 Partition 的大小大于 `spark.sql.adaptive.skewedPartitionSizeThreshold` 的同时大于各 Partition 大小中位数与该因子的乘积，或者行数大于 `spark.sql.adaptive.skewedPartitionRowCountThreshold` 的同时大于各 Partition 行数中位数与该因子的乘积，则它会被视为倾斜的 Partition
+
+
+
+## spark命令启动参数作用对比
+
+这里以spark-sql命令为例。
+
+```
+spark-sql --driver-cores    5   \
+        --driver-memory   5G  \
+        --executor-memory 5g \
+        --num-executors 8 \
+        --total-executor-cores 8\
+        --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
+        --conf spark.kryoserializer.buffer.max.mb=1024 \
+        --conf spark.storage.memoryFraction=0.2
+```
+
+资源使用的是yarn的资源。这里的大数据环境是在hdp环境。
+
+![](http://image-picgo.test.upcdn.net/img/20200429141527.png)
+
+测试的数据集是` tpcds_bin_partitioned_orc_200`。200g的数据库。
+
+使用的是hive benchmark中的一条语句。
+
+```sql
+select  
+  cd_gender,
+  cd_marital_status,
+  cd_education_status,
+  count(*) cnt1,
+  cd_purchase_estimate,
+  count(*) cnt2,
+  cd_credit_rating,
+  count(*) cnt3,
+  cd_dep_count,
+  count(*) cnt4,
+  cd_dep_employed_count,
+  count(*) cnt5,
+  cd_dep_college_count,
+  count(*) cnt6
+ from
+  customer c,customer_address ca,customer_demographics
+ where
+  c.c_current_addr_sk = ca.ca_address_sk and
+  ca_county in ('Walker County','Richland County','Gaines County','Douglas County','Dona Ana County') and
+  cd_demo_sk = c.c_current_cdemo_sk and 
+  exists (select *
+          from store_sales,date_dim
+          where c.c_customer_sk = ss_customer_sk and
+                ss_sold_date_sk = d_date_sk and
+                d_year = 2002 and
+                d_moy between 4 and 4+3) and
+   (exists (select *
+            from web_sales,date_dim
+            where c.c_customer_sk = ws_bill_customer_sk and
+                  ws_sold_date_sk = d_date_sk and
+                  d_year = 2002 and
+                  d_moy between 4 ANd 4+3) or 
+    exists (select * 
+            from catalog_sales,date_dim
+            where c.c_customer_sk = cs_ship_customer_sk and
+                  cs_sold_date_sk = d_date_sk and
+                  d_year = 2002 and
+                  d_moy between 4 and 4+3))
+ group by cd_gender,
+          cd_marital_status,
+          cd_education_status,
+          cd_purchase_estimate,
+          cd_credit_rating,
+          cd_dep_count,
+          cd_dep_employed_count,
+          cd_dep_college_count
+ order by cd_gender,
+          cd_marital_status,
+          cd_education_status,
+          cd_purchase_estimate,
+          cd_credit_rating,
+          cd_dep_count,
+          cd_dep_employed_count,
+          cd_dep_college_count
+limit 100;
+```
+
+128s计算出结果
+
+![](http://image-picgo.test.upcdn.net/img/20200429141444.png)
+
+当调小了启动参数
+
+```
+spark-sql --driver-cores    2   \
+        --driver-memory   4G  \
+        --executor-memory 2g \
+        --num-executors 2 \
+        --total-executor-cores 6\
+        --conf spark.serializer=org.apache.spark.serializer.KryoSerializer \
+        --conf spark.kryoserializer.buffer.max.mb=1024 \
+        --conf spark.storage.memoryFraction=0.2
+```
+
+yarn分配的资源就少了。
+
+![](http://image-picgo.test.upcdn.net/img/20200429142607.png)
+
+执行相同sql，计算的时间也长了，需要382s。
+
+![](http://image-picgo.test.upcdn.net/img/20200429142628.png)
 
 
 
@@ -336,6 +477,60 @@ scala>
 
 
 
+## 使用sparkshell读mysql写clickhouse
+
+启动命令：
+
+```shell
+spark-shell --name "to_ck_scene_model"   --packages ru.yandex.clickhouse:clickhouse-jdbc:0.2 --jars mysql-connector-java-8.0.11.jar
+```
+
+执行脚本：
+
+```scala
+import java.sql.DriverManager
+
+val ckTableN = "salaries"
+val partitionField ="from_date"
+val orderFieldAndDefauV = "emp_no"
+val tableName="salaries"
+val mysqlUser="root"
+val mysqlPwd="root"
+val mysqlDriver="com.mysql.jdbc.Driver"
+val ckUrl ="jdbc:clickhouse://192.168.1.238:8123"
+val ckDriver="ru.yandex.clickhouse.ClickHouseDriver"
+
+// 读mysql数据作为df
+val pros = new java.util.Properties
+pros.setProperty("driver",mysqlDriver)
+pros.setProperty("user", mysqlUser)
+pros.setProperty("password", mysqlPwd)
+pros.setProperty("driver",mysqlDriver)
+val df = spark.read.jdbc("jdbc:mysql://192.168.1.130:3306/employees","salaries",pros)
+// 预览并缓存mysql数据
+df.cache.show
+
+//通过mysql桥接 ，通过查询语句在clickhouse中创建表 操作后两边数据结构会一致。也可以手动在ck侧建好表。
+val connection = DriverManager.getConnection(ckUrl,"default","123")
+var pst=connection.createStatement()
+pst.execute("drop table if exists "+ckTableN)
+pst.execute("create table "+ckTableN+" ENGINE = MergeTree order by "+orderFieldAndDefauV+" as  SELECT * FROM mysql('192.168.1.130:3306', 'employees', "+tableName+", '"+mysqlUser+"', '"+mysqlPwd+"')")
+
+// spark写出数据到ck
+var pro = new java.util.Properties
+pro.put("driver",ckDriver)
+pro.setProperty("user", "default")
+pro.setProperty("password", "123")
+// 默认写入批次是2w，可以调大至5w
+df.write.mode("append").option("socket_timeout","300000").option("rewriteBatchedStatements", "true").option("batchsize", "50000").option("isolationLevel", "NONE").option("numPartitions", "1").jdbc(ckUrl,ckTableN,pro)
+
+
+```
+
+`"socket_timeout": "300000"`是为了解决`read time out`异常的问题，当某个分区的数据量较大时会出现这个问题，单位为毫秒。
+
+`rewriteBatchedStatements`，`batchsize`, `numPartitions`解决`DB::Exception: Merges are processing signiﬁcantly slower than inserts`问题，原因是批次写入量少，并发多。
+
 
 
 ## 使用thrifserver查询mysql数据
@@ -577,3 +772,172 @@ StructType schema = dataset.schema()
 
 spark sql中的schema是一个`org.apache.spark.sql.types.StructType`对象，包含了多个`org.apache.spark.sql.types.DataType`对象
 
+
+
+
+
+## delta lake体验
+
+### 参考文档
+
+https://docs.delta.io/latest/quick-start.html
+
+
+
+### spark shell快速体验
+
+```shell
+spark-shell --name "deltalake_test"   --packages io.delta:delta-core_2.11:0.5.0
+```
+
+建表
+
+```scala
+scala> val data = spark.range(5,10)
+scala> data.write.format("delta").mode("overwrite").save("/tmp/delta-table")
+```
+
+条件删除
+
+```scala
+scala> import io.delta.tables._
+scala> val deltaTable = DeltaTable.forPath("/tmp/delta-table")
+scala> deltaTable.delete(expr("id % 2 == 0"))
+scala> deltaTable.toDF.show
++---+
+| id|
++---+
+|  7|
+|  5|
+|  9|
++---+
+```
+
+
+
+## deequ体验
+
+### 介绍
+
+Deequ is a library built on top of Apache Spark for defining "unit tests for data", which measure data quality in large datasets.
+
+**可以用于观测数据，和评估数据质量。**
+
+[文档](https://github.com/awslabs/deequ)
+
+
+
+### 快速体验
+
+启动命令。
+
+```
+spark-shell --name "deequ_test"   --packages com.amazon.deequ:deequ:1.0.2
+```
+
+输入代码：
+
+```scala
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+case class Item(
+  id: Long,
+  productName: String,
+  description: String,
+  priority: String,
+  numViews: Long
+)
+val rdd = spark.sparkContext.parallelize(Seq(
+  Item(1, "Thingy A", "awesome thing.", "high", 0),
+  Item(2, "Thingy B", "available at http://thingb.com", null, 0),
+  Item(3, null, null, "low", 5),
+  Item(4, "Thingy D", "checkout https://thingd.ca", "low", 10),
+  Item(5, "Thingy E", null, "high", 12)))
+
+val data = spark.createDataFrame(rdd)
+
+// Exiting paste mode, now interpreting.
+
+defined class Item
+rdd: org.apache.spark.rdd.RDD[Item] = ParallelCollectionRDD[0] at parallelize at <console>:20
+data: org.apache.spark.sql.DataFrame = [id: bigint, productName: string ... 3 more fields]
+
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+import com.amazon.deequ.VerificationSuite
+import com.amazon.deequ.checks.{Check, CheckLevel, CheckStatus}
+
+
+val verificationResult = VerificationSuite()
+  .onData(data)
+  .addCheck(
+    Check(CheckLevel.Error, "unit testing my data")
+      .hasSize(_ == 5) // we expect 5 rows
+      .isComplete("id") // should never be NULL
+      .isUnique("id") // should not contain duplicates
+      .isComplete("productName") // should never be NULL
+      // should only contain the values "high" and "low"
+      .isContainedIn("priority", Array("high", "low"))
+      .isNonNegative("numViews") // should not contain negative values
+      // at least half of the descriptions should contain a url
+      .containsURL("description", _ >= 0.5)
+      // half of the items should have less than 10 views
+      .hasApproxQuantile("numViews", 0.5, _ <= 10))
+    .run()
+
+// Exiting paste mode, now interpreting.
+
+Hive Session ID = 7e17f6f9-eab9-4e08-90f4-f9709cec30f1
+import com.amazon.deequ.VerificationSuite                                       
+import com.amazon.deequ.checks.{Check, CheckLevel, CheckStatus}
+verificationResult: com.amazon.deequ.VerificationResult = VerificationResult(Error,Map(Check(Error,unit testing my data,List(SizeConstraint(Size(None)), CompletenessConstraint(Completeness(id,None)), UniquenessConstraint(Uniqueness(List(id))), CompletenessConstraint(Completeness(productName,None)), ComplianceConstraint(Compliance(priority contained in high,low,`priority` IS NULL OR `priority` IN ('high','low'),None)), ComplianceConstraint(Compliance(numViews is non-negative,COALESCE(numViews, 0.0) >= 0,None)), containsURL(description), ApproxQuantileConstraint(ApproxQuantile(numViews,0.5,0.01)))) -> CheckResult(Check(Error,unit testing my data,List(SizeConstraint(Size(None)), Comple...
+scala> :paste
+// Entering paste mode (ctrl-D to finish)
+
+import com.amazon.deequ.constraints.ConstraintStatus
+
+
+if (verificationResult.status == CheckStatus.Success) {
+  println("The data passed the test, everything is fine!")
+} else {
+  println("We found errors in the data:\n")
+
+  val resultsForAllConstraints = verificationResult.checkResults
+    .flatMap { case (_, checkResult) => checkResult.constraintResults }
+
+  resultsForAllConstraints
+    .filter { _.status != ConstraintStatus.Success }
+    .foreach { result => println(s"${result.constraint}: ${result.message.get}") }
+}
+
+
+// Exiting paste mode, now interpreting.
+
+We found errors in the data:
+
+CompletenessConstraint(Completeness(productName,None)): Value: 0.8 does not meet the constraint requirement!
+containsURL(description): Value: 0.4 does not meet the constraint requirement!
+import com.amazon.deequ.constraints.ConstraintStatus
+
+scala> 
+```
+
+
+
+
+
+## waterdrop
+
+
+
+## griffin
+
+
+
+## Piflow
+
+
+
+## carbondata

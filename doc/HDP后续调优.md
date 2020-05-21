@@ -99,6 +99,16 @@ ln -s /home/log_data/log/ /var/log
 
 
 
+## Hive
+
+-  orc大表在查询`select count(1) from table`时查询结果为0，但是是有数据的。
+
+  ![](http://image-picgo.test.upcdn.net/img/20200427155825.png)
+
+
+
+
+
 ## spark
 
 ### spark无法查询hive命令行建的表
@@ -164,6 +174,39 @@ Caused by: org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.security.Acce
 关闭hdfs权限就可以了。
 
 ![](http://image-picgo.test.upcdn.net/img/20200116140436.png)
+
+
+
+
+
+### Spark thrift支持查询mysql表
+
+ambari加配置声明启动spark thrfit时的命令。
+
+如下：
+
+![](http://image-picgo.test.upcdn.net/img/20200515102117.png)
+
+```shell
+ --jars hdfs:///jdbc/mysql-connector-java-8.0.11.jar  --driver-class-path hdfs:///jdbc/mysql-connector-java-8.0.11.jar
+```
+
+然后就可以在客户端工具查询mysql表了。
+
+```SQL
+CREATE TEMPORARY TABLE dept 
+USING org.apache.spark.sql.jdbc 
+OPTIONS(
+url 'jdbc:mysql://192.168.1.130:3306/yiboard', 
+driver 'com.mysql.jdbc.Driver', 
+dbtable 'chart', 
+user 'root', 
+password 'root',
+fetchSize '1000');
+SELECT * from dept;
+```
+
+![](http://image-picgo.test.upcdn.net/img/20200515102311.png)
 
 
 

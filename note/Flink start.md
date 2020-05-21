@@ -109,6 +109,36 @@ Flink SQL> select count(1) from DriverChanges;
    此时已经可以看到hive上的表了。
 
    ![](http://image-picgo.test.upcdn.net/img/20200409161418.png)
+   
+   **但是好像不能查询orc的数据表。（待解决）**
+
+
+
+## Flink sql benchmark
+
+参考：https://github.com/ververica/flink-sql-benchmark
+
+该项目包含了**生成hive数据库**和**flink sql benchmark程序**。
+
+1. git下载源码`https://github.com/ververica/flink-sql-benchmark`
+
+2. MAVEN编译。
+
+   ```
+   mvn clean install
+   ```
+
+3. 启动standalone或者yarn session。
+
+4. 提交自动基准测试程序。
+
+   ```
+   bin/flink run -c com.ververica.flink.benchmark.Benchmark /opt/flink-sql-benchmark/flink-tpcds/target/flink-tpcds-0.1-SNAPSHOT-jar-with-dependencies.jar --database tpcds_text_100 --hive_conf /etc/hive/conf --parallelism 30 --queries q1.sql
+   ```
+
+5. 可以看到flink ui上执行的sql
+
+   ![](http://image-picgo.test.upcdn.net/img/20200429113025.png)
 
 
 
