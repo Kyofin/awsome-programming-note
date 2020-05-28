@@ -147,6 +147,123 @@ yarn分配的资源就少了。
 
 
 
+## 本地idea运行spark app
+
+A master URL must be set in your configuration
+
+Run->Edit Configurations
+![](http://image-picgo.test.upcdn.net/img/20200430092835.png)
+
+
+
+
+
+
+## spark app远程debug
+
+这里使用spark自带的example `org.apache.spark.examples.JavaSparkPi`断点测试。
+
+该方法好像只能断点driver的代码，**不能断点rdd**的代码。
+
+即图中**红色部分**才可以。
+
+![image-20200526163627365](http://image-picgo.test.upcdn.net/img/20200526163627.png)
+
+
+
+使用方法如下。
+
+1. 配置idea
+
+   ![](http://image-picgo.test.upcdn.net/img/20200526163004.png)
+
+2. spark启动命令增加参数
+
+   `--conf spark.driver.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 `
+
+   完整命令如下：
+
+   本质是使用sparksubmit时带上上面的java参数。
+
+   ```shell
+   [root@cdh06 spark2]#  bin/run-example --conf spark.driver.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 org.apache.spark.examples.JavaSparkPi 100
+   ```
+
+3. 断点测试
+
+   在看到命令行输出`Listening for transport dt_socket at address: 5005`后，在idea中启动远程断点。
+
+   可以看到断点进入循环体内了。
+
+   ![image-20200526163333716](http://image-picgo.test.upcdn.net/img/20200526163333.png)
+
+
+
+
+
+## spark shell远程debug
+
+1. sparkshell启动前输入环境变量
+
+   ```shell
+   [root@cdh06 spark2]# export SPARK_SUBMIT_OPTS=-agentlib:jdwp=transport=dt_socket,servend=n,address=5005
+   ```
+
+2. 参考app断点设置idea
+
+3. 测试
+
+   ![image-20200526165337439](http://image-picgo.test.upcdn.net/img/20200526165337.png)
+
+
+
+## spark编译二进制部署包
+
+zinc 可以增量编译scala，因为编译scala最慢的就是他自己的library了。
+
+### mac中zinc启动、关闭。
+
+```shell
+/usr/local/Cellar/maven/3.6.2 » zinc -shutdown                                                                                                           
+/usr/local/Cellar/maven/3.6.2 » zinc -start     
+```
+
+### 执行编译
+
+```shell
+./dev/make-distribution.sh --name hzk-spark   --tgz  -Phadoop-2.7 -Phive -Phive-thriftserver -Pyarn -DskipTests
+```
+
+成功后，可以看到如下文件夹。
+
+![image-20200527155438930](http://image-picgo.test.upcdn.net/img/20200527155439.png)
+
+可以看到压缩包。
+
+![image-20200527170015880](/Users/huzekang/Library/Application Support/typora-user-images/image-20200527170015880.png)
+
+
+
+### 配置好环境变量指向该目录
+
+![image-20200527155926459](http://image-picgo.test.upcdn.net/img/20200527155926.png)
+
+### 测试编译好的spark-shell
+
+会报如下错误。
+
+![image-20200527155555462](http://image-picgo.test.upcdn.net/img/20200527155555.png)
+
+此时修改该文件。
+
+![image-20200527155635702](http://image-picgo.test.upcdn.net/img/20200527155635.png)
+
+再启动则可以使用local模式了。虽然会报错找不到hadoop的lib。
+
+![image-20200527155751809](http://image-picgo.test.upcdn.net/img/20200527155752.png)
+
+
+
 ## spark源码编译
 
 命令行设置代理翻墙
@@ -343,6 +460,14 @@ DESCRIBE FUNCTION EXTENDED !;
 
 
 ## 开启thriftserver启动spark-sql远程服务
+
+如果端口指定下面的没用，可以使用环境变量
+
+```
+export HIVE_SERVER2_THRIFT_PORT=10014
+```
+
+
 
 ### 启动
 
@@ -812,6 +937,52 @@ scala> deltaTable.toDF.show
 |  9|
 +---+
 ```
+
+
+
+## 常见错误
+
+1. ### 本地mac的spark-shell中使用sql时报无法访问8020端口
+
+   ![image-20200527160459040](http://image-picgo.test.upcdn.net/img/20200527160459.png)
+
+   解决：
+
+   将远程hadoop集群的`core-site.xml`和`hive-site.xml`放入**spark的conf**目录中即可。
+
+   ![image-20200527162807100](http://image-picgo.test.upcdn.net/img/20200527162807.png)
+
+   此时就可以在本地的spark-shell中访问远程集群中的hive表了。
+
+   ![image-20200527162922564](http://image-picgo.test.upcdn.net/img/20200527162922.png)
+
+
+
+
+
+2. ### 本地mac的spark-shell无法连接内网的yarn资源
+
+   ![image-20200528182312570](http://image-picgo.test.upcdn.net/img/20200528182312.png)
+
+   启动后一直访问本地的yarn获取资源，由于本地的没开yarn，就一直无法获取资源了。
+
+   解决办法：
+
+   将远程hadoop集群的`yarn-site.xml`放入**spark的conf**目录中即可。
+
+   ![image-20200528182450444](http://image-picgo.test.upcdn.net/img/20200528182450.png)
+
+   重启spark-shell后，发现新的问题。
+
+   ![image-20200528182742878](http://image-picgo.test.upcdn.net/img/20200528182743.png)
+
+   解决办法：
+
+   将集群安装spark客户端的服务器上的`topology_script.py`复制到本地mac电脑的`/etc/hadoop/conf`目录
+
+   ![image-20200528182913980](http://image-picgo.test.upcdn.net/img/20200528182914.png)
+
+   此时重启spark-shell即可。
 
 
 

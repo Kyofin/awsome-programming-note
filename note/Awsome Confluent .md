@@ -703,6 +703,43 @@ curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" 
 
 
 
+
+
+## 使用Debezium监听sqlserver CDC
+
+### 安装connect插件
+
+```
+confluent-hub install debezium/debezium-connector-sqlserver:latest
+```
+
+### 配置sqlserver指定数据库和表开启cdc
+
+```sql
+-- 库开启
+ALTER DATABASE datax SET CHANGE_TRACKING = ON (CHANGE_RETENTION = 2 DAYS,AUTO_CLEANUP = ON)
+-- 表开启
+ALTER TABLE goods ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)
+
+-- 执行cdc
+exec sys.sp_cdc_enable_db
+-- 检验是否生效
+SELECT name, is_cdc_enabled 
+FROM sys.databases WHERE is_cdc_enabled = 1
+```
+
+
+
+### 配置使用sqlserver connector
+
+```shell
+curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" localhost:8083/connectors/ -d '{"name":"yibo-connector","config":{"connector.class":"io.debezium.connector.sqlserver.SqlServerConnector","database.hostname":"192.168.1.142","database.port":"1433","database.user":"sa","database.password":"yibosa@142","database.dbname":"datax","database.server.name":"fullfillment","table.whitelist":"dbo.goods","database.history.kafka.bootstrap.servers":"localhost:9092","database.history.kafka.topic":"dbhistory.fullfillment"}}'
+```
+
+
+
+
+
 ## jdbc connector将数据从oracle到mysql
 
 ### 配置source读取oracle
