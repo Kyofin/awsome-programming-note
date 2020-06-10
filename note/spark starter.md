@@ -6,9 +6,36 @@
 
 
 
+## Spark APP常用调优参数
+
+```java
+//动态资源调整
+      .config("spark.dynamicAllocation.enabled", "true")
+      .config("spark.dynamicAllocation.executorIdleTimeout", "30s")
+      .config("spark.dynamicAllocation.maxExecutors", "100")
+      .config("spark.dynamicAllocation.minExecutors", "0")
+      //动态分区
+      .config("hive.exec.dynamic.partition", "true")
+      .config("hive.exec.dynamic.partition.mode", "nonstrict")
+      .config("hive.exec.max.dynamic.partitions", 20000)
+      //调度模式
+      .config("spark.scheduler.mode", "FAIR")
+      .config("spark.executor.memoryOverhead", "512")
+      .config("spark.serializer","org.apache.spark.serializer.KryoSerializer")
+```
 
 
-## Spark sql常用调优参数
+
+
+
+## Spark sql自适应调优参数
+
+```
+--conf spark.sql.adaptive.enabled=TRUE 
+--conf  spark.sql.adaptive.join.enabled=TRUE 
+--conf  spark.sql.adaptive.skewedJoin.enabled=TRUE
+
+```
 
 参考[Adaptive Execution 让 Spark SQL 更高效更智能](http://www.jasongj.com/spark/adaptive_execution/)
 
@@ -154,6 +181,10 @@ A master URL must be set in your configuration
 Run->Edit Configurations
 ![](http://image-picgo.test.upcdn.net/img/20200430092835.png)
 
+```
+-Dspark.master=local
+```
+
 
 
 
@@ -206,7 +237,7 @@ Run->Edit Configurations
 1. sparkshell启动前输入环境变量
 
    ```shell
-   [root@cdh06 spark2]# export SPARK_SUBMIT_OPTS=-agentlib:jdwp=transport=dt_socket,servend=n,address=5005
+   [root@cdh06 spark2]# export SPARK_SUBMIT_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005
    ```
 
 2. 参考app断点设置idea
@@ -215,7 +246,22 @@ Run->Edit Configurations
 
    ![image-20200526165337439](http://image-picgo.test.upcdn.net/img/20200526165337.png)
 
+4. 演示debug本地spark-shell在启动时怎么根据master去创建TaskScheduler的。
 
+   启动命令。这里使用代码打包完成的二进制包中的spark-shell。
+
+   ```shell
+   /Volumes/Samsung_T5/huzekang/opensource/hdp-3.1.0.0-78/spark2-release-HDP-3.1.0.0-78/dist(master*) » spark-shell --master local[2]                       
+   
+   ```
+
+   启动后在idea中打开断点监听可以看到如下：
+
+   ![image-20200529123747475](http://image-picgo.test.upcdn.net/img/20200529123747.png)
+
+   可以看到spark会根据`--master local[2]         `启动2个线程来执行任务。
+
+   
 
 ## spark编译二进制部署包
 
@@ -337,6 +383,31 @@ export http_proxy=10.0.0.17:1087
 
 
 注意 Spark on YARN 支持两种运行模式，分别为`yarn-cluster`和`yarn-client`，具体的区别可以看[这篇博文](http://www.iteblog.com/archives/1223)，从广义上讲，yarn-cluster适用于生产环境；而yarn-client适用于交互和调试，也就是希望快速地看到application的输出。
+
+
+
+## Spark sql 连接es
+
+es官网下载hadoop依赖
+
+![image-20200605142538866](http://image-picgo.test.upcdn.net/img/20200605142539.png)
+
+```shell
+ spark-sql --jars ~/Downloads/elasticsearch-hadoop-7.5.0/dist/elasticsearch-spark-20_2.11-7.5.0.jar  --driver-class-path ~/Downloads/elasticsearch-hadoop-7.5.0/dist/elasticsearch-spark-20_2.11-7.5.0.jar
+```
+
+启动spark-sql终端后，创建视图。
+
+```SQL
+create temporary table metadata
+using org.elasticsearch.spark.sql
+options('resource'='metadata/jdbc', 
+  'nodes'= '192.168.1.130',
+  'es.nodes.wan.only'='true',
+  'es.port'='9200');
+```
+
+![image-20200605142621726](http://image-picgo.test.upcdn.net/img/20200605142621.png)
 
 
 
@@ -658,6 +729,27 @@ df.write.mode("append").option("socket_timeout","300000").option("rewriteBatched
 
 
 
+## thriftserver启动http连接模式
+
+配置spark配置目录下的hive-site.xml文件
+
+![image-20200605155238901](http://image-picgo.test.upcdn.net/img/20200605155239.png)
+
+正常启动thriftserver后使用beeline去连接。注意端口不再是10000而是10001。
+
+```shell
+/Volumes/Samsung_T5/huzekang/opensource/hdp-3.1.0.0-78/spark2-release-HDP-3.1.0.0-78/dist(master*) » bin/beeline                                         
+Beeline version 1.21.2.3.1.0.0-78 by Apache Hive
+beeline> !connect jdbc:hive2://localhost:10001/default;transportMode=http;httpPath=cliservice
+
+```
+
+
+
+
+
+
+
 ## 使用thrifserver查询mysql数据
 
 ### 参考文档
@@ -687,7 +779,7 @@ starting org.apache.spark.sql.hive.thriftserver.HiveThriftServer2, logging to /U
 创建spark侧表关联mysql侧**单分区表**表。
 
 ```sql
-0: jdbc:hive2://localhost:10003> CREATE TEMPORARY TABLE dept USING org.apache.spark.sql.jdbc OPTIONS (url "jdbc:mysql://localhost/test?user=root&password=eWJmP7yvpccHCtmVb61Gxl2XLzIrRgmT", dbtable "dept");
+0: jdbc:hive2://localhost:10003> CREATE TEMPORARY TABLE dept USING org.apache.spark.sql.jdbc OPTIONS (driver "com.mysql.jdbc.Driver" ,url "jdbc:mysql://localhost/test?user=root&password=eWJmP7yvpccHCtmVb61Gxl2XLzIrRgmT", dbtable "dept");
 ```
 
 注册完即可使用spark sql查询了。

@@ -208,6 +208,35 @@ SELECT * from dept;
 
 ![](http://image-picgo.test.upcdn.net/img/20200515102311.png)
 
+如果想支持ck，sqlserver，pg，oracle的话。
+
+可以参考以下：
+
+先上传需要的驱动到hdfs。
+
+![image-20200601184523625](http://image-picgo.test.upcdn.net/img/20200601184523.png)
+
+测试
+
+```SQL
+ CREATE TEMPORARY TABLE catalog_page_mysql USING org.apache.spark.sql.jdbc OPTIONS (driver "com.mysql.jdbc.Driver" ,url "jdbc:mysql://192.168.1.130:3306/tpcds_200?user=root&password=root&rewriteBatchedStatements=true", dbtable "catalog_page");
+
+
+CREATE TEMPORARY TABLE titles_pg USING org.apache.spark.sql.jdbc OPTIONS (driver "org.postgresql.Driver", url "jdbc:postgresql://192.168.1.150:5432/employees?user=postgres&password=postgres&rewriteBatchedStatements=true", dbtable "titles");
+
+CREATE TEMPORARY TABLE catalog_page_ck USING org.apache.spark.sql.jdbc OPTIONS (driver "ru.yandex.clickhouse.ClickHouseDriver" ,url "jdbc:clickhouse://cdh06:8123/tpcds_200?user=default&password=123&rewriteBatchedStatements=true", dbtable "catalog_page");
+
+
+select * from catalog_page_mysql;
+select * from titles_pg;
+select * from catalog_page_ck;
+
+DROP view catalog_page_mysql ;
+
+```
+
+
+
 
 
 ## hbase

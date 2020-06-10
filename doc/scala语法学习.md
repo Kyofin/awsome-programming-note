@@ -4,9 +4,58 @@
 
 
 
+## Array,Seq,List区别
+
+### List
+
+标准的链表。
+
+```scala
+scala> List(1, 2, 3)
+res0: List[Int] = List(1, 2, 3)
+```
+
+构造列表的两个基本单位是 **Nil** 和 **::**
+
+**Nil** 也可以表示为一个空列表。
+
+```scala
+scala> 1::Nil
+res24: List[Int] = List(1)
+```
+
+添加一个元素
+
+```scala
+scala> 22 +: res36
+res39: List[Int] = List(22, 1, 1111)
+
+scala> res36 :+ 22
+res40: List[Int] = List(1, 1111, 22)
+```
+
+
+
+
+
+### 序列 Seq
+
+序列有一个给定的顺序。
+
+```scala
+scala> Seq(1, 1, 2)
+res3: Seq[Int] = List(1, 1, 2)
+```
+
+（请注意返回的是一个列表。因为`Seq`是一个特质；而列表是序列的很好实现。如你所见，`Seq`也是一个工厂单例对象，可以用来创建列表。）
+
+
+
 ## scala循环
 
-左箭头 <- 用于为变量 a 赋值。
+普通用法：左箭头 <- 用于为变量 a 赋值。
+
+迭代元素
 
 ```scala
 object Test {
@@ -21,6 +70,48 @@ object Test {
    }
 }
 ```
+
+
+
+for  yield普通用法：
+
+根据声明返回集合。
+
+```scala
+scala> val a = Array(1, 2, 3, 4, 5)
+a: Array[Int] = Array(1, 2, 3, 4, 5)
+
+scala> for (e <- a) yield e
+res5: Array[Int] = Array(1, 2, 3, 4, 5)
+
+scala> for (e <- a) yield e * 2
+res6: Array[Int] = Array(2, 4, 6, 8, 10)
+
+scala> for (e <- a) yield e % 2
+res7: Array[Int] = Array(1, 0, 1, 0, 1)
+```
+
+
+
+for  yield高级用法：
+
+迭代 `a*a`次，根据声明返回集合。
+
+```scala
+scala> a
+res2: Array[Int] = Array(1, 2, 3)
+
+scala> for(e <- a ; f <- a) yield (e,f)
+res3: Array[(Int, Int)] = Array((1,1), (1,2), (1,3), (2,1), (2,2), (2,3), (3,1), (3,2), (3,3))
+```
+
+
+
+for yield总结：
+
+- For each iteration of your *for* loop, yield generates a value which is remembered by the for loop (behind the scenes, like a buffer).
+- When your for loop finishes running, it **returns** a collection of **all these yielded values**.
+- The type of the collection that is returned is the **same type** that you were iterating over.
 
 
 
