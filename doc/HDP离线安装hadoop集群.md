@@ -14,6 +14,12 @@ https://www.cloudera.com/tutorials.html
 
 
 
+## 各个组件的版本
+
+https://docs.cloudera.com/HDPDocuments/HDP3/HDP-3.1.0/release-notes/content/comp_versions.html
+
+
+
 ## 安装包下载
 
 ambari-2.7.3.0：

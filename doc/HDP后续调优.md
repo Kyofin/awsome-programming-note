@@ -109,6 +109,39 @@ ln -s /home/log_data/log/ /var/log
 
 
 
+## Yarn
+
+yarn配置调优，可以参考[Determine HDP Memory Configuration Settings](https://docs.cloudera.com/HDPDocuments/HDP2/HDP-2.1.1/bk_installing_manually_book/content/rpm-chap1-11.html)
+
+1. 下载测试脚本
+
+   ```shell
+   wget http://public-repo-1.hortonworks.com/HDP/tools/2.0.6.0/hdp_manual_install_rpm_helper_files-2.0.6.101.tar.gz 
+   ```
+
+2. 解压压缩包，进入目录`script`
+
+3. 使用命令
+
+   ```
+   python yarn-utils.py -c 8 -m 32 -d 4 -k False
+   ```
+
+   With the following options:
+
+   | **Option** | **Description**                               |
+   | ---------- | --------------------------------------------- |
+   | -c CORES   | The number of cores on each host.             |
+   | -m MEMORY  | The amount of memory on each host in GB.      |
+   | -d DISKS   | The number of disks on each host.             |
+   | -k HBASE   | "True" if HBase is installed, "False" if not. |
+
+4. 可以看到计算出的最佳设置
+
+   ![image-20200611153413131](http://image-picgo.test.upcdn.net/img/20200611153413.png)
+
+
+
 ## spark
 
 ### spark无法查询hive命令行建的表

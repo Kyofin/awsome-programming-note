@@ -354,6 +354,26 @@ describe function extended md5;
 
 
 
+## 读取外部表
+
+### 读取kafka数据
+
+```SQL
+CREATE EXTERNAL TABLE test_kafka2
+(`message` string)
+ STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
+TBLPROPERTIES
+ ("kafka.topic" = "maxwell",
+ "kafka.bootstrap.servers"="cdh05:6667"
+);
+
+SELECT * from test_kafka2
+```
+
+
+
+
+
 ## 基准测试
 
 Hive基准测试工具工具，可用来造数测试Hive基本性能

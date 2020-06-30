@@ -6,10 +6,19 @@
 
 
 
-## Spark APP常用调优参数
+## Spark APP常用配置
+
+可以在命令行指定，也可以在spark作业初始化sparksession时指定。
 
 ```java
-//动态资源调整
+			// hive metastore指定,可以读hive上的表
+			.config("hive.metastore.uris","thrift://cdh04:9083")
+			// yarn 资源管理指定,yarn模式才需要
+			.config("spark.hadoop.yarn.resourcemanager.hostname","cdh04")
+        // 指定fs.defaultFS
+        .config("spark.hadoop.fs.defaultFS","hdfs://cdh04:8020")
+			//动态资源调整
+      .config("spark.shuffle.service.enabled", "true")
       .config("spark.dynamicAllocation.enabled", "true")
       .config("spark.dynamicAllocation.executorIdleTimeout", "30s")
       .config("spark.dynamicAllocation.maxExecutors", "100")
@@ -22,6 +31,8 @@
       .config("spark.scheduler.mode", "FAIR")
       .config("spark.executor.memoryOverhead", "512")
       .config("spark.serializer","org.apache.spark.serializer.KryoSerializer")
+        // 运行sql中使用corss join
+        .config("spark.sql.crossJoin.enabled","true")
 ```
 
 
@@ -383,6 +394,43 @@ export http_proxy=10.0.0.17:1087
 
 
 注意 Spark on YARN 支持两种运行模式，分别为`yarn-cluster`和`yarn-client`，具体的区别可以看[这篇博文](http://www.iteblog.com/archives/1223)，从广义上讲，yarn-cluster适用于生产环境；而yarn-client适用于交互和调试，也就是希望快速地看到application的输出。
+
+
+
+## spark sql 语法文档
+
+参考：[SQL reference](https://docs.databricks.com/spark/latest/spark-sql/language-manual/index.html)
+
+```SQL
+-- 分析表信息
+ANALYZE TABLE HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934 COMPUTE STATISTICS
+
+-- 查询表信息分析结果
+DESCRIBE EXTENDED HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934
+DESCRIBE  HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934
+DESCRIBE Formatted  HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934
+
+
+
+-- 分析表字段
+ANALYZE TABLE HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934 COMPUTE STATISTICS FOR COLUMNS t_time_sk ,  t_time_id, t_time
+
+-- 查询表字段分析结果
+DESCRIBE  EXTENDED HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934  t_time_sk 
+DESCRIBE  EXTENDED  HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934  t_time_id
+DESCRIBE  EXTENDED  HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934  t_time
+
+-- 缓存表
+cache TABLE HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934
+
+-- 清除缓存
+UNCACHE TABLE HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934
+
+-- 查询建表语句
+SHOW CREATE TABLE HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934
+```
+
+
 
 
 
@@ -1204,3 +1252,11 @@ scala>
 
 
 ## carbondata
+
+
+
+## icberg
+
+
+
+## hudi
