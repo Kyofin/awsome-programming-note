@@ -372,6 +372,17 @@ SELECT * from test_kafka2
 
 
 
+## HA的连接方式
+
+使用beeline连接
+
+```sql
+!connect jdbc:hive2://localhost:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=kyuubi-huzekang
+
+```
+
+其中zooKeeperNamespace自行上zk上看。
+
 
 
 ## 基准测试

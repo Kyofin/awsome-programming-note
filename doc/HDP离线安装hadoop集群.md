@@ -687,3 +687,21 @@ yum remove -y hadoop_2* hdp-select* ranger_2* zookeeper* bigtop*atlas-metadata* 
 4、删除postgresql数据库中各组件的数据
 
 ​     postgresql软件卸载后，其数据还保留在硬盘中，需要把这部分数据删除掉，如果不删除掉，重新安装ambari-server后，有可能还应用以前的安装数据，而这些数据时错误数据，所以需要删除掉。
+
+
+
+
+
+## 项目中使用hdp的依赖
+
+pom文件中需要加入
+
+```XML
+<repositories>
+        <repository>
+            <id>HDP</id>
+            <url>https://repo.hortonworks.com/content/repositories/releases/</url>
+        </repository>
+    </repositories>
+```
+

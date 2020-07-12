@@ -1,10 +1,48 @@
 # scala语法学习
 
+## 循环表达式
+
+- to
+
+  ```scala
+  1 to 10
+  1.to(10)
+  ```
+
+  包含1到10
+
+- range
+
+  ```scala
+  Range(1,10)
+  ```
+
+  包含1到9
+
+  ```
+  Range(1,10,2)
+  ```
+
+  包含1，3，5，7，9
+
+- until
+
+  ```scala
+  1 until 10
+  1.until(10)
+  ```
+
+  包含1到9。等同于Range
+
+
+
 ## some、none、option用法
 
 
 
 ## Array,Seq,List区别
+
+![image-20200630231154264](http://image-picgo.test.upcdn.net/img/20200630231154.png)
 
 ### List
 
@@ -53,9 +91,11 @@ res3: Seq[Int] = List(1, 1, 2)
 
 ## scala循环
 
-普通用法：左箭头 <- 用于为变量 a 赋值。
+### 普通for循环：
 
-迭代元素
+左箭头 <- 用于为变量 a 赋值。
+
+循环迭代元素
 
 ```scala
 object Test {
@@ -69,6 +109,38 @@ object Test {
       }
    }
 }
+```
+
+循环中加判断
+
+```scala
+for(i <- 1 to 10 if i% 2 ==0){
+  println(i)
+}
+```
+
+
+
+### foreach循环:
+
+```scala
+val courses = Array("hadoop","spark sql","flink")
+
+courses.foreach(c=> println(c))
+```
+
+
+
+### while循环
+
+```scala
+// 定义一个tuple , 注意这里是var，val下面的sum会报错。
+var (num,sum) =(100,0)
+while(num>0){
+	sum = sum +num
+	num = num -1
+}
+println(sum)
 ```
 
 

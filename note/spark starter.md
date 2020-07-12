@@ -6,36 +6,127 @@
 
 
 
+## spark资料
+
+```java
+知识类:
+https://github.com/JerryLead/SparkInternals 
+https://github.com/JerryLead/SparkLearning 
+https://github.com/databricks/spark-knowledgebase 
+https://github.com/knoldus/Play-Spark-Scala
+
+接口类:
+https://github.com/plaa/mongo-spark 
+https://github.com/datastax/spark-cassandra-connector https://github.com/deanwampler/spark-workshop 
+https://github.com/databricks/spark-avro 
+https://github.com/massie/spark-parquet-example 
+https://github.com/tmalaska/SparkOnHBase 
+https://github.com/skrusche63/spark-elastic
+
+功能类:
+https://github.com/databricks/spark-perf 
+https://github.com/sequenceiq/docker-spark 
+https://github.com/ezhaar/spark-installer
+
+算法类:
+https://github.com/BaiGang/spark_multiboost 
+https://github.com/alitouka/spark_dbscan 
+https://github.com/OndraFiedler/spark-recommender
+
+应用类:
+https://github.com/yaooqinn/kyuubi   //spark thrift jdbc增强版
+https://github.com/spark-jobserver/spark-jobserver 
+https://github.com/ooyala/spark-jobserver 
+https://github.com/ibm-et/spark-kernel
+https://github.com/sigmoidanalytics/spork
+https://github.com/adobe-research/spindle
+https://github.com/adobe-research/spindle 
+https://github.com/hohonuuli/sparknotebook
+```
+
+
+
+
+
 ## Spark APP常用配置
 
 可以在命令行指定，也可以在spark作业初始化sparksession时指定。
 
 ```java
-			// hive metastore指定,可以读hive上的表
-			.config("hive.metastore.uris","thrift://cdh04:9083")
+			// hive metastore指定,可以读hive上的表。只有当session使用了enableHiveSupport()才生效
+			.config("spark.hadoop.hive.metastore.uris","thrift://cdh04:9083")
+        // 指定spark sql中创建的表的数据存到hdfs的哪个目录
+        .config("spark.sql.warehouse.dir","/user/hive/warehouse")
 			// yarn 资源管理指定,yarn模式才需要
-			.config("spark.hadoop.yarn.resourcemanager.hostname","cdh04")
+			.config("spark.hadoop.yarn.resourcemanager.address","cdh04:8050")
         // 指定fs.defaultFS
         .config("spark.hadoop.fs.defaultFS","hdfs://cdh04:8020")
 			//动态资源调整
       .config("spark.shuffle.service.enabled", "true")
       .config("spark.dynamicAllocation.enabled", "true")
       .config("spark.dynamicAllocation.executorIdleTimeout", "30s")
+       .config("spark.dynamicAllocation.initialExecutors", "3")
       .config("spark.dynamicAllocation.maxExecutors", "100")
       .config("spark.dynamicAllocation.minExecutors", "0")
       //动态分区
       .config("hive.exec.dynamic.partition", "true")
       .config("hive.exec.dynamic.partition.mode", "nonstrict")
       .config("hive.exec.max.dynamic.partitions", 20000)
-      //调度模式
+      //调度模式FAIR
       .config("spark.scheduler.mode", "FAIR")
+       //调度fair模式配置文件
+      .config("spark.scheduler.allocation.file", "/usr/hdp/current/spark2-thriftserver/conf/spark-thrift-fairscheduler.xml")
       .config("spark.executor.memoryOverhead", "512")
       .config("spark.serializer","org.apache.spark.serializer.KryoSerializer")
-        // 运行sql中使用corss join
+        // 允许sql中使用corss join
         .config("spark.sql.crossJoin.enabled","true")
 ```
 
 
+
+## spark shell指定fair调度模式
+
+启动命令增加下面配置。
+
+```shell
+ --conf spark.scheduler.allocation.file="/Users/huzekang/tmp/fairscheduler.xml" 
+ --conf spark.scheduler.mode="FAIR"           
+```
+
+其中**fairscheduler.xml** 文件
+
+```XML
+<?xml version="1.0"?>
+
+<allocations>
+  <pool name="fair_pool">
+    <schedulingMode>FAIR</schedulingMode>
+    <weight>2</weight>
+    <minShare>4</minShare>
+  </pool>
+  <pool name="a_different_pool">
+    <schedulingMode>FIFO</schedulingMode>
+    <weight>1</weight>
+    <minShare>2</minShare>
+  </pool>
+</allocations>
+```
+
+在spark shell中执行代码，**运行时**指定调度池。
+
+```scala
+scala> sc.setLocalProperty("spark.scheduler.pool","fair_pool")
+
+scala> val someRdd = sc.parallelize(1 to 100,2)
+someRdd: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[0] at parallelize at <console>:24
+
+scala> someRdd.collect
+res1: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100)
+```
+
+其中`sc.setLocalProperty("spark.scheduler.pool","fair_pool")`指定了pool，所以后面的代码会用这个pool。
+
+![image-20200701102335428](http://image-picgo.test.upcdn.net/img/20200701102335.png)
 
 
 
@@ -432,7 +523,25 @@ SHOW CREATE TABLE HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934
 
 
 
+## Spark history  server
 
+用于记录启动过的spark app。
+
+需要配置`spark-defaults.conf`文件
+
+```properties
+spark.eventLog.enabled=true
+spark.eventLog.dir=file:///Users/huzekang/tmp/spark_history
+spark.history.fs.logDirectory=file:///Users/huzekang/tmp/spark_history
+```
+
+然后启动`sbin/start-history-server.sh`
+
+![image-20200711105324764](http://image-picgo.test.upcdn.net/img/20200711105324.png)
+
+作业日志会存放到文件中。
+
+![image-20200711105332628](http://image-picgo.test.upcdn.net/img/20200711105332.png)
 
 ## Spark sql 连接es
 
