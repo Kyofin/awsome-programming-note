@@ -270,6 +270,107 @@ DROP view catalog_page_mysql ;
 
 
 
+### 部署apache版本spark2.4.4客户端到hdp
+
+1. 将hdp集群中原有spark中的conf目录下的hive-stie.xml复制到新的spark的conf目录下
+
+   ![image-20200717104903690](http://image-picgo.test.upcdn.net/img/20200717104903.png)
+
+   这样就可以访问hdp集群中hive的数据了。
+
+2. 将hdp集群中原有spark中的conf目录下的spark-env.sh复制到新的spark的conf目录下
+
+   修改部分配置。
+
+   下面为参考
+
+   ```shell
+   
+   #!/usr/bin/env bash
+   
+   export SPARK_HOME=/opt/spark-2.4.4-bin-hadoop2.6
+   
+   # Generic options for the daemons used in the standalone deploy mode
+   
+   # Alternate conf dir. (Default: ${SPARK_HOME}/conf)
+   export SPARK_CONF_DIR=${SPARK_HOME}/conf
+   
+   # Where log files are stored.(Default:${SPARK_HOME}/logs)
+   #export SPARK_LOG_DIR=${SPARK_HOME:-/usr/hdp/current/spark2-thriftserver}/logs
+   export SPARK_LOG_DIR=${SPARK_HOME}/logs
+   
+   # Where the pid file is stored. (Default: /tmp)
+   export SPARK_PID_DIR=${SPARK_HOME}/pid
+   
+   #Memory for Master, Worker and history server (default: 1024MB)
+   export SPARK_DAEMON_MEMORY=2048m
+   
+   # A string representing this instance of spark.(Default: $USER)
+   SPARK_IDENT_STRING=$USER
+   
+   # The scheduling priority for daemons. (Default: 0)
+   SPARK_NICENESS=0
+   
+   export HADOOP_HOME=${HADOOP_HOME:-/usr/hdp/3.1.0.0-78/hadoop}
+   export HADOOP_CONF_DIR=${HADOOP_CONF_DIR:-/usr/hdp/3.1.0.0-78/hadoop/conf}
+   
+   # The java implementation to use.
+   export JAVA_HOME=/usr/java/default
+   ```
+
+   关键是SPARK_HOME、HADOOP_HOME、HADOOP_CONF_DIR、JAVA_HOME
+
+3. 在新spark的conf目录下创建文件`spark-defaults.conf`文件
+
+   ```properties
+   #
+   # Licensed to the Apache Software Foundation (ASF) under one or more
+   # contributor license agreements.  See the NOTICE file distributed with
+   # this work for additional information regarding copyright ownership.
+   # The ASF licenses this file to You under the Apache License, Version 2.0
+   # (the "License"); you may not use this file except in compliance with
+   # the License.  You may obtain a copy of the License at
+   #
+   #    http://www.apache.org/licenses/LICENSE-2.0
+   #
+   # Unless required by applicable law or agreed to in writing, software
+   # distributed under the License is distributed on an "AS IS" BASIS,
+   # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   # See the License for the specific language governing permissions and
+   # limitations under the License.
+   #
+   
+   # Default system properties included when running spark-submit.
+   # This is useful for setting default environmental settings.
+   
+   # Example:
+   # spark.master                     spark://master:7077
+   # spark.eventLog.enabled           true
+   # spark.eventLog.dir               hdfs://namenode:8021/directory
+   # spark.serializer                 org.apache.spark.serializer.KryoSerializer
+   # spark.driver.memory              5g
+   # spark.executor.extraJavaOptions  -XX:+PrintGCDetails -Dkey=value -Dnumbers="one two three"
+   
+   
+   spark.driver.extraJavaOptions -Dhdp.version=3.1.0.0-78
+   spark.yarn.am.extraJavaOptions -Dhdp.version=3.1.0.0-78
+   
+   spark.master yarn-client
+   
+   ```
+
+   关键是-Dhdp.version=3.1.0.0-78。如果不配，则无法使用yarn client模式。
+
+4. 在ambari中设置yarn
+
+   设置`spark.hadoop.yarn.timeline-service.enabled=false`
+
+   ![image-20200717105900362](http://image-picgo.test.upcdn.net/img/20200717105900.png)
+
+   然后在ambari中重启yarn
+
+
+
 
 
 ## hbase
