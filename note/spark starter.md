@@ -14,6 +14,9 @@ https://github.com/JerryLead/SparkInternals
 https://github.com/JerryLead/SparkLearning 
 https://github.com/databricks/spark-knowledgebase 
 https://github.com/knoldus/Play-Spark-Scala
+https://www.zybuluo.com/changedi/note/1413747 // Spark SQL玩起来
+https://databricks.com/blog/2015/07/15/introducing-window-functions-in-spark-sql.html //窗口函数
+
 
 接口类:
 https://github.com/plaa/mongo-spark 
@@ -42,6 +45,8 @@ https://github.com/sigmoidanalytics/spork
 https://github.com/adobe-research/spindle
 https://github.com/adobe-research/spindle 
 https://github.com/hohonuuli/sparknotebook
+
+
 ```
 
 
@@ -133,9 +138,9 @@ res1: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 
 ## Spark sql自适应调优参数
 
 ```
---conf spark.sql.adaptive.enabled=TRUE 
---conf  spark.sql.adaptive.join.enabled=TRUE 
---conf  spark.sql.adaptive.skewedJoin.enabled=TRUE
+--conf spark.sql.adaptive.enabled=true
+--conf  spark.sql.adaptive.join.enabled=true 
+--conf  spark.sql.adaptive.skewedJoin.enabled=true
 
 ```
 
@@ -288,6 +293,35 @@ Run->Edit Configurations
 ```
 
 
+
+## spark on yarn的动态资源调度
+
+1. 将spark目录下的yarn文件中的`spark-<version>-yarn-shuffle.jar`复制到`hadoop-2.6.0-cdh5.16.2/share/hadoop/yarn/lib`目录下，让nodeManager可以加载到。
+
+2. 配置hadoop目录下的yarn-site.xml文件,加入以下配置
+
+   ```xml
+   <!-- spark yarn 动态资源 -->
+     <property>
+           <name>yarn.nodemanager.aux-services</name>
+           <value>spark_shuffle</value>
+       </property>
+   
+        <property>
+           <name>yarn.nodemanager.aux-services.spark_shuffle.class</name>
+           <value>org.apache.spark.network.yarn.YarnShuffleService</value>
+       </property>
+   ```
+
+3. Increase `NodeManager's` heap size by setting `YARN_HEAPSIZE` (1000 by default) in `etc/hadoop/yarn-env.sh` to avoid garbage collection issues during shuffle.(spark官方推荐的)
+
+4. 启动spark-sql时加上动态资源的配置
+
+   ```
+    spark-sql --master yarn --conf spark.dynamicAllocation.enabled=true --conf spark.shuffle.service.enabled=true
+   ```
+
+   
 
 
 
@@ -488,6 +522,47 @@ export http_proxy=10.0.0.17:1087
 
 
 
+# spark sql的元数据使用pg替代derby数据库
+
+在spark目录的conf文件夹中，创建hive-site.xml
+
+```XML
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <value>jdbc:postgresql://192.168.5.18:5432/demo_hive_spark</value>
+  <description>the URL of the MySQL database</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionDriverName</name>
+  <value>org.postgresql.Driver</value>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionUserName</name>
+  <value>postgres</value>
+</property>
+
+<property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>izA8v8gFIXqsXXwa4BZWahrW6dtQ21T8</value>
+    </property>
+<!-- 数据存储目录 -->
+
+    <property>
+  <name>hive.metastore.warehouse.dir</name>
+  <value>/user/spark/warehouse</value>
+</property>
+</configuration>
+```
+
+ 启动spark-sql后，创建的表的元信息都会存放到pg中
+
+
+
 ## spark sql 语法文档
 
 参考：[SQL reference](https://docs.databricks.com/spark/latest/spark-sql/language-manual/index.html)
@@ -528,6 +603,8 @@ SHOW CREATE TABLE HIVE_ODS_22_TPCDS_200_TIME_DIM_20200611101934
 用于记录启动过的spark app。
 
 需要配置`spark-defaults.conf`文件
+
+不能指定hdfs地址，只能使用本地文件夹。
 
 ```properties
 spark.eventLog.enabled=true

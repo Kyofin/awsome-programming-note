@@ -22,6 +22,20 @@ from tb_cis_inhos_dis_reg
 
 
 
+## idea导入hive源码
+
+这里下载的是cdh版本的hive源码。
+
+在根目录下执行源码编译。
+
+```shell
+/cdh5.16.2/hive-1.1.0-cdh5.16.2 » mvn clean package -DskipTests -Phadoop-2
+```
+
+![image-20200729092203625](http://image-picgo.test.upcdn.net/img/20200729092203.png)
+
+注意，编译成功后用idea导入时需要，右边maven插件中需要选中hadoop-2的profile
+
 
 
 ## 内置函数
@@ -369,6 +383,148 @@ TBLPROPERTIES
 
 SELECT * from test_kafka2
 ```
+
+
+
+## 开窗函数
+
+参考：https://www.jianshu.com/p/a2f22af39072
+
+### 1. 介绍
+
+普通聚合函数聚合的行集是组，开窗函数聚合的行集是窗口。
+因此，普通聚合函数每组（Group by）只有一个返回值，而开窗函数则可以为窗口中的每行都返回一个值。
+
+### 1.1 基础结构
+
+```swift
+分析函数(如：sum(), max(), row_number()...) + 窗口子句(over函数)
+```
+
+### 1.2 over函数
+
+`over(partition by [column_n] order by [column_m])`先按照`column_n`分区，相同的`column_n`分为一区，每个分区根据`column_m`排序（默认升序）。
+
+### 1.3 测试数据
+
+建表并插入数据
+
+
+
+```csharp
+-- 建表
+create table student_scores(
+  id int,
+  studentId int,
+  language int,
+  math int,
+  english int,
+  classId string,
+  departmentId string
+);
+-- 写入数据
+insert into table student_scores values 
+  (1,111,68,69,90,'class1','department1'),
+  (2,112,73,80,96,'class1','department1'),
+  (3,113,90,74,75,'class1','department1'),
+  (4,114,89,94,93,'class1','department1'),
+  (5,115,99,93,89,'class1','department1'),
+  (6,121,96,74,79,'class2','department1'),
+  (7,122,89,86,85,'class2','department1'),
+  (8,123,70,78,61,'class2','department1'),
+  (9,124,76,70,76,'class2','department1'),
+  (10,211,89,93,60,'class1','department2'),
+  (11,212,76,83,75,'class1','department2'),
+  (12,213,71,94,90,'class1','department2'),
+  (13,214,94,94,66,'class1','department2'),
+  (14,215,84,82,73,'class1','department2'),
+  (15,216,85,74,93,'class1','department2'),
+  (16,221,77,99,61,'class2','department2'),
+  (17,222,80,78,96,'class2','department2'),
+  (18,223,79,74,96,'class2','department2'),
+  (19,224,75,80,78,'class2','department2'),
+  (20,225,82,85,63,'class2','department2');
+```
+
+### 1.4 窗口含义
+
+
+
+```csharp
+select studentId,math,departmentId,classId,
+-- 符合所有条件的行作为窗口，这里符合department1的有9个
+count(math) over() as count1,
+-- 按照classId分组的所有行作为窗口
+count(math) over(partition by classId) as count2,
+-- 按照classId分组、按照math排序的所有行作为窗口
+count(math) over(partition by classId order by math) as count3,
+-- 按照classId分组、按照math排序，当前行向前1行向后2行的行作为窗口
+count(math) over(partition by classId order by math rows between 1 preceding and 2 following) as count4,
+-- 按照classId分组、按照math排序，当前行向后所有行作为窗口
+count(math) over(partition by classId order by math rows between current row and unbounded following) as count5
+from student_scores where departmentId='department1';
+```
+
+结果：
+
+```undefined
+studentId    math    departmentId    classId    count1    count2    count3    count4    count5
+111          69      department1     class1     9         5         1         3         5
+113          74      department1     class1     9         5         2         4         4
+112          80      department1     class1     9         5         3         4         3
+115          93      department1     class1     9         5         4         3         2
+114          94      department1     class1     9         5         5         2         1
+124          70      department1     class2     9         4         1         3         4
+121          74      department1     class2     9         4         2         4         3
+123          78      department1     class2     9         4         3         3         2
+122          86      department1     class2     9         4         4         2         1
+```
+
+结果解析：
+
+```undefined
+studentId=115，
+count1为departmentId=department1的行数为9，
+count2为分区class1中的行数5，
+count3为分区class1中math<=93的行数4，
+count4为分区class1中math值向前1行和向后2行的行数3，
+count5为分区class1中当前math值到class1分区结束的行数2。
+```
+
+上面可以看到：如果不指定`ROWS BETWEEN`，默认统计窗口是从起点到当前行
+ **关键是`ROWS BETWEEN`，也叫做`window子句`。**
+ `PRECEDING`：向前
+ `FOLLOWING`：向后
+ `CURRENT ROW`：当前行
+ `UNBOUNDED`：无边界，`UNBOUNDED PRECEDING`表示从最前面的起点开始，`UNBOUNDED FOLLOWING`表示到最后面的终点
+
+##### 开窗函数可以粗略地分为两类：聚合开窗函数和排序开窗函数。
+
+
+
+### 2. 聚合开窗函数
+
+### 2.1 sum函数
+
+
+
+```csharp
+select studentId,math,departmentId,classId,
+sum(math) over() as sum1,
+sum(math) over(partition by classId) as sum2,
+sum(math) over(partition by classId order by math) as sum3,
+sum(math) over(partition by classId order by math rows between 1 preceding and 2 following) as sum4,
+sum(math) over(partition by classId order by math rows between current row and unbounded following) as sum5
+from student_scores where departmentId='department1';
+
+-- 结果解析：类似count()函数
+```
+
+> min()，max()，avg()都与count()类似
+
+
+
+
 
 
 
