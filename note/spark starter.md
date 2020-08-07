@@ -301,10 +301,10 @@ Run->Edit Configurations
 2. 配置hadoop目录下的yarn-site.xml文件,加入以下配置
 
    ```xml
-   <!-- spark yarn 动态资源 -->
+   	
      <property>
            <name>yarn.nodemanager.aux-services</name>
-           <value>spark_shuffle</value>
+           <value>mapreduce_shuffle,spark_shuffle</value>
        </property>
    
         <property>
@@ -312,6 +312,8 @@ Run->Edit Configurations
            <value>org.apache.spark.network.yarn.YarnShuffleService</value>
        </property>
    ```
+
+   **注意**：aux-services中追加spark_shuffle即可，不要把前面的mapreduce_shuffle删了，删了会导致mr程序无法执行shuffle操作。
 
 3. Increase `NodeManager's` heap size by setting `YARN_HEAPSIZE` (1000 by default) in `etc/hadoop/yarn-env.sh` to avoid garbage collection issues during shuffle.(spark官方推荐的)
 

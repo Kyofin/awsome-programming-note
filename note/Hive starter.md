@@ -34,7 +34,17 @@ from tb_cis_inhos_dis_reg
 
 ![image-20200729092203625](http://image-picgo.test.upcdn.net/img/20200729092203.png)
 
-注意，编译成功后用idea导入时需要，右边maven插件中需要选中hadoop-2的profile
+注意：
+
+1. 编译成功后用idea导入时需要将右边maven插件中需要选中hadoop-2的profile
+
+2. 最好在idea中rebuild整个project
+
+3. 将环境中的hive-site.xml放入resource目录
+
+   ![image-20200730172414379](http://image-picgo.test.upcdn.net/img/20200730172414.png)
+
+4. 启动CliDriver测试
 
 
 
