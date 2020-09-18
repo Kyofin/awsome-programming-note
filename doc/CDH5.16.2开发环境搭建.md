@@ -279,7 +279,17 @@ https://docs.cloudera.com/documentation/enterprise/5-16-x/topics/cdh_ig_hive_met
 </configuration>
 ```
 
-将pg依赖放入hive目录的lib文件夹中。
+将**pg依赖**放入hive目录的lib文件夹中。
+
+如果要用mysql的话，要在mysql的数据库中执行`ALTER DATABASE CHARACTER SET latin1`。
+
+否则在hive shell中新建hive的表时会报错。
+
+```
+MySQLSyntaxErrorException: Column length too big for column 'PARAM_VALUE
+```
+
+
 
 
 

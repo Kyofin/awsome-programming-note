@@ -87,6 +87,19 @@ https://github.com/hohonuuli/sparknotebook
         .config("spark.sql.crossJoin.enabled","true")
 ```
 
+HDFS HA
+
+```JAVA
+
+sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://cdhservice")
+sc.hadoopConfiguration.set("dfs.nameservices", "cdhservice")
+sc.hadoopConfiguration.set("dfs.ha.namenodes.cdhservice", "namenode36,namenode105")
+sc.hadoopConfiguration.set("dfs.namenode.rpc-address.cdhservice.namenode36", "cdh1:8020")
+sc.hadoopConfiguration.set("dfs.namenode.rpc-address.cdhservice.namenode105", "cdh3:8020")
+sc.hadoopConfiguration.set("dfs.client.failover.proxy.provider.cdhservice", "org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider")
+
+```
+
 
 
 ## spark shell指定fair调度模式
@@ -1425,7 +1438,11 @@ scala>
 
 
 
+## oap
 
+https://github.com/Intel-bigdata/OAP
+
+提升交互式查询性能，增加索引和缓存
 
 ## waterdrop
 
@@ -1448,3 +1465,8 @@ scala>
 
 
 ## hudi
+
+
+
+## [spark-alchemy](https://github.com/swoop-inc/spark-alchemy)
+

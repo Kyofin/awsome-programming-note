@@ -534,6 +534,30 @@ from student_scores where departmentId='department1';
 
 
 
+## Hive 日志记录
+
+### 输出日志文件
+
+```
+hive --hiveconf hive.log.dir=/tmp/hive/huzekang
+```
+
+hive cli启动后可以看到日志输出到文件。
+
+![image-20200915145339156](http://image-picgo.test.upcdn.net/img/20200915145339.png)
+
+### 详细日志打印到控制台
+
+```
+hive --hiveconf hive.root.logger=INFO,console
+```
+
+### 日志中输出查询计划
+
+```
+hive --hiveconf hive.log.explain.output=true
+```
+
 
 
 
@@ -571,5 +595,133 @@ FORMAT=parquet ./tpcds-setup.sh 10 //生成10G的parquet格式的hive表
 
 
 
+## Hive Cli 查看orc文件元数据
+
+```
+hive --orcfiledump hdfs:///user/hive/warehouse/user_copy1/ds=20200911/DATAX_15802138783242_1_0
+```
 
 
+
+## 使用LineageLogger获取血源关系
+
+启动hive cli，并打印详细日志。
+
+```
+hive --hiveconf hive.root.logger=INFO,console
+```
+
+LineageLogger是hive默认就有的。只要注册到post的hook中即可。
+
+```
+set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.LineageLogger;
+```
+
+使用查询sql创建表
+
+```sql
+create table t_x_0 as select u.id,city,concat(name,",",cc) from tutu_user u left join (
+    select id ,concat_ws("|",collect_list(concat(year," ",month," ",traffic))) cc
+    from tutu_access group by id) a on a.id = u.id;
+```
+
+![image-20200915173306818](http://image-picgo.test.upcdn.net/img/20200915173306.png)
+
+
+
+## Hook开发
+
+### 参考文档
+
+https://www.slideshare.net/julingks/apache-hive-hooksminwookim130813
+
+![image-20200915164208344](http://image-picgo.test.upcdn.net/img/20200915164208.png)
+
+![image-20200915170514946](http://image-picgo.test.upcdn.net/img/20200915170515.png)
+
+### 依赖
+
+```
+  <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-exec</artifactId>
+            <version>${hive.version}</version>
+        </dependency>
+
+```
+
+### 计算sql执行的hook代码参考
+
+可以参考 `org.apache.hadoop.hive.ql.hooks.LineageLogger`
+
+```java
+public class HiveExampleHook implements ExecuteWithHookContext {
+	@Override
+	public void run(HookContext hookContext) throws Exception {
+		System.out.println("==========  " + System.getProperty("user.name") + "正在执行hive作业  ========");
+		final ArrayList<ReadEntity> readEntities = new ArrayList<>(hookContext.getInputs());
+		readEntities.forEach(e -> {
+			System.out.println("读取表：" + e.getName());
+			final List<String> accessedColumns = e.getAccessedColumns();
+			System.out.println("读取到的字段：");
+			accessedColumns.forEach(System.out::println);
+		});
+		hookContext.getOutputs().forEach(e -> System.out.println("写出表：" + e.getName()));
+
+	}
+}
+
+```
+
+
+
+### DDL的sql执行的hook代码参考
+
+```JAVA
+public class HiveMetaStoreHook extends MetaStoreEventListener {
+
+
+  public HiveMetaStoreHook(Configuration config) {
+    super(config);
+  }
+
+  @Override
+  public void onCreateTable(CreateTableEvent tableEvent) throws MetaException {
+    System.out.println("======================== HiveMetastoreHook (onCreateTable) =========================");
+    System.out.println("已建表："+tableEvent.getTable().getTableName());
+    System.out.println("表存储路径："+tableEvent.getTable().getSd().getLocation());
+  }
+}
+```
+
+
+
+### 运行Cli
+
+添加hook的jar到hive中，然后指定hook的周期节点。
+
+```shell
+add jar /Volumes/Samsung_T5/huzekang/study/bigdata-hadoop/target/bigdata-hadoop-1.0.jar;
+
+set hive.exec.pre.hooks=com.data.hive.hook.HiveExampleHook;
+
+set hive.metastore.event.listeners=com.data.hive.hook.HiveMetaStoreHook;
+```
+
+### 效果
+
+执行sql根据查询结果创建表。
+
+```sql
+create table t_x_0 as select u.id,city,concat(name,",",cc) from tutu_user u left join (
+    select id ,concat_ws("|",collect_list(concat(year," ",month," ",traffic))) cc
+    from tutu_access group by id) a on a.id = u.id;
+```
+
+![image-20200915170335837](http://image-picgo.test.upcdn.net/img/20200915170336.png)
+
+```SQL
+create table hoook(id int);
+```
+
+![image-20200915170924021](http://image-picgo.test.upcdn.net/img/20200915170924.png)
