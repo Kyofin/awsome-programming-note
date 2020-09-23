@@ -307,6 +307,34 @@ Run->Edit Configurations
 
 
 
+## idea中运行SparkSQLCLIDriver
+
+1. 成功完成spark编译压缩部署包（按照印象笔记中笔记方式）
+
+2. 修改spark的pom文件
+
+   ![image-20200922093516261](http://image-picgo.test.upcdn.net/img/20200922093516.png)
+
+3. 修改profile
+
+   ![image-20200922093645306](http://image-picgo.test.upcdn.net/img/20200922093645.png)
+
+4. 刷新下pom文件，然后rebuild项目
+
+5. 配置启动类
+
+   ![image-20200922093741352](http://image-picgo.test.upcdn.net/img/20200922093741.png)
+
+6. 放入hive-site和core-site到resource目录
+
+   ![image-20200922093835652](http://image-picgo.test.upcdn.net/img/20200922093835.png)
+
+7. 测试
+
+   ![image-20200922093913858](http://image-picgo.test.upcdn.net/img/20200922093913.png)
+
+
+
 ## spark on yarn的动态资源调度
 
 1. 将spark目录下的yarn文件中的`spark-<version>-yarn-shuffle.jar`复制到`hadoop-2.6.0-cdh5.16.2/share/hadoop/yarn/lib`目录下，让nodeManager可以加载到。
@@ -414,7 +442,7 @@ Run->Edit Configurations
 
    
 
-## spark编译二进制部署包
+## spark编译二进制部署包（HDP版本）
 
 zinc 可以增量编译scala，因为编译scala最慢的就是他自己的library了。
 
