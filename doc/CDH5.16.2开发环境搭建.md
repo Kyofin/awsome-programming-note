@@ -306,6 +306,7 @@ hivemetastore 开放端口9083  ——》 thrift协议
 
 ## 测试hiveserver2服务是否ok
 
+```SHELL
 [hzk@bigdata001 ~]$ beeline
 which: no hbase in (/home/hzk/app/hadoop/bin:/home/hzk/app/hadoop/sbin:/home/hzk/app/hive/bin:/usr/java/jdk1.8.0_121/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/hzk/.local/bin:/home/hzk/bin)
 Beeline version 1.1.0-cdh5.16.2 by Apache Hive
@@ -325,6 +326,9 @@ Enter password for jdbc:hive2://bigdata001:10000/default: 无需输入密码
 +----------------+--+
 1 row selected (0.782 seconds)
 0: jdbc:hive2://bigdata001:10000/default> 
+```
+
+
 
 
 
