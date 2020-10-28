@@ -1498,3 +1498,12 @@ https://github.com/Intel-bigdata/OAP
 
 ## [spark-alchemy](https://github.com/swoop-inc/spark-alchemy)
 
+
+
+## [mahout](https://github.com/apache/mahout)
+
+机器学习
+
+
+
+## [spark-df-profiling](https://github.com/julioasotodv/spark-df-profiling)

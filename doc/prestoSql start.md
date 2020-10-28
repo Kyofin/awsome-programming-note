@@ -1,6 +1,8 @@
 # prestoSql start
 
-## 源码下载
+## 330版本
+
+### 源码下载
 
 https://github.com/prestosql/presto.git
 
@@ -8,7 +10,7 @@ https://github.com/prestosql/presto.git
 
 
 
-## idea导入项目
+### idea导入项目
 
 启动类是`io.prestosql.server.PrestoServer`
 
@@ -113,3 +115,75 @@ kudu.client.master-addresses=cdh02
 
 ```
 
+
+
+
+
+## 308版本
+
+### 源码下载
+
+```
+git clone https://github.com/prestosql/presto.git
+git checkout 308
+git checkout -b hzk_308
+```
+
+### 编译
+
+```
+mvn  clean install -DskipTests 
+```
+
+![image-20201017000018198](http://image-picgo.test.upcdn.net/img/20201017000018.png)
+
+### 导入idea
+
+![image-20201017000039430](http://image-picgo.test.upcdn.net/img/20201017000039.png)
+
+```
+-ea
+-XX:+UseG1GC
+-XX:G1HeapRegionSize=32M
+-XX:+UseGCOverheadLimit
+-XX:+ExplicitGCInvokesConcurrent
+-Xmx2G
+-Dconfig=etc/config.properties
+-Dlog.levels-file=etc/log.properties
+-Djdk.attach.allowAttachSelf=true
+-Dpresto-temporarily-allow-java8=true
+```
+
+![image-20201017000145535](http://image-picgo.test.upcdn.net/img/20201017000145.png)
+
+启动成功。访问`http://127.0.0.1:8080/ui/`
+
+![image-20201017000200525](http://image-picgo.test.upcdn.net/img/20201017000200.png)
+
+![image-20201017000214483](http://image-picgo.test.upcdn.net/img/20201017000214.png)
+
+### 启动客户cli
+
+```
+~/openSource/prestosql(hzk_308*) » java -jar  presto-cli/target/presto-cli-308-executable.jar 
+```
+
+可以执行help查看命令帮助
+
+### SQL执行debug
+
+![image-20201017001216817](http://image-picgo.test.upcdn.net/img/20201017001216.png)
+
+该sql会触发`ScanFilterAndProjectOperator`。
+
+![image-20201017001258680](http://image-picgo.test.upcdn.net/img/20201017001258.png)
+
+### 接口debug
+
+该rest接口定时会触发
+
+![image-20201017001822772](http://image-picgo.test.upcdn.net/img/20201017001822.png)
+
+### 使用内置tpcds数据集测试
+
+![image-20201017004802716](http://image-picgo.test.upcdn.net/img/20201017004802.png)
