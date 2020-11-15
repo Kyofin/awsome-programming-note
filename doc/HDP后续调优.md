@@ -101,9 +101,19 @@ ln -s /home/log_data/log/ /var/log
 
 ## Hive
 
--  orc大表在查询`select count(1) from table`时查询结果为0，但是是有数据的。
+#### orc大表在查询`select count(1) from table`时查询结果为0，但是是有数据的。
 
-  ![](http://image-picgo.test.upcdn.net/img/20200427155825.png)
+![](http://image-picgo.test.upcdn.net/img/20200427155825.png)
+
+
+
+#### hive增加lastAccessTime记录
+
+![image-20201113163526177](http://image-picgo.test.upcdn.net/img/20201113163526.png)
+
+```
+org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook,org.apache.hadoop.hive.ql.hooks.UpdateInputAccessTimeHook$PreExec
+```
 
 
 
@@ -370,6 +380,23 @@ DROP view catalog_page_mysql ;
    然后在ambari中重启yarn
 
 
+
+### spark程序中写出数据源为hive时报错
+
+出现错误：
+
+```JAVA
+org.apache.spark.sql.AnalysisException: org.apache.hadoop.hive.ql.metadata.HiveException: org.apache.hadoop.hive.ql.metadata.HiveException: Load Data failed for hdfs://***:8020/warehouse/tablespace/managed/hive/***/.hive-staging_hive_
+2019-07-02_18-17-08_028_419193115114639265-1/-ext-10000/part-00000-1f0e8f19-6a12-448f-ba18-a2319711c0aa-c000 as the file is not owned by hive and load data is also not ran as hive;
+```
+
+![img](https://img-blog.csdnimg.cn/20190702190702312.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTE1MjkxMDQ=,size_16,color_FFFFFF,t_70)
+
+![img](https://img-blog.csdnimg.cn/20190702190743904.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTE1MjkxMDQ=,size_16,color_FFFFFF,t_70)
+
+![img](https://img-blog.csdnimg.cn/20190702190806898.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTE1MjkxMDQ=,size_16,color_FFFFFF,t_70)
+
+在spark的配置文件 hive-site.xml添加`hive.load.data.owner=spark`(具体执行用户)
 
 
 
