@@ -232,9 +232,28 @@ service firewalld stop
 
 [hzk@bigdata001 hadoop]$ jps
 
-3.6 open
+## open浏览器
+
 http://bigdata001:50070
 http://bigdata001:18088
+
+
+
+## 测试yarn
+
+hadoop目录下执行
+
+```
+find ./ -name "*example*.jar"
+```
+
+找到mr的example jar包。
+
+```
+.//share/hadoop/mapreduce2/hadoop-mapreduce-examples-2.6.0-cdh5.16.2.jar
+```
+
+使用`hadoop jar xxx pi 1 1`测试
 
 
 
