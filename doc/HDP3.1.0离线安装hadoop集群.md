@@ -1,4 +1,4 @@
-# HDP离线安装hadoop集群
+# HDP3.1.0离线安装hadoop集群
 
 ## 官方文档
 
