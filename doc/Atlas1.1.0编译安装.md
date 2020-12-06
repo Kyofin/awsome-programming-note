@@ -1,5 +1,9 @@
 # Atlas1.1.0编译安装
 
+## 环境
+
+本地mac是基于cdh5.16.2版本的hadoop环境
+
 ## 下载
 
 http://archive.apache.org/dist/atlas/1.1.0/
@@ -8,7 +12,37 @@ http://archive.apache.org/dist/atlas/1.1.0/
 
 ## 编译
 
-为了避免编译Apache Atlas JanusGraph DB Impl失败
+### 为避免出现编译文档错误
+
+```
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-site-plugin:3.7:site (default) on project atlas-docs: SiteToolException: The site descriptor cannot be resolved from the repository: ArtifactResolutionException: Unable to locate site descriptor: Could not transfer artifact org.apache:apache:xml:site_en:17 from/to typesafe (http://repo.typesafe.com/typesafe/releases/): Transfer failed for http://repo.typesafe.com/typesafe/releases/org/apache/apache/17/apache-17-site_en.xml
+[ERROR]   org.apache:apache:xml:17
+[ERROR]
+[ERROR] from the specified remote repositories:
+[ERROR]   central (https://maven.aliyun.com/nexus/content/groups/public, releases=true, snapshots=false),
+[ERROR]   snapshots (https://maven.aliyun.com/nexus/content/groups/public, releases=false, snapshots=true),
+[ERROR]   rdc-releases (https://repo.rdc.aliyun.com/repository/129217-release-BDOmuI/, releases=true, snapshots=false),
+[ERROR]   rdc-snapshots (https://repo.rdc.aliyun.com/repository/129217-snapshot-dLwFxP/, releases=false, snapshots=true),
+[ERROR]   oracleReleases (http://download.oracle.com/maven, releases=true, snapshots=true),
+[ERROR]   hortonworks.repo (http://repo.hortonworks.com/content/repositories/releases, releases=true, snapshots=false),
+[ERROR]   apache.snapshots.repo (https://repository.apache.org/content/groups/snapshots, releases=true, snapshots=true),
+[ERROR]   apache-staging (https://repository.apache.org/content/groups/staging/, releases=true, snapshots=true),
+[ERROR]   default (https://repository.apache.org/content/groups/public/, releases=true, snapshots=true),
+[ERROR]   java.net-Public (https://maven.java.net/content/groups/public/, releases=true, snapshots=true),
+[ERROR]   repository.jboss.org-public (https://repository.jboss.org/nexus/content/groups/public, releases=true, snapshots=true),
+[ERROR]   typesafe (http://repo.typesafe.com/typesafe/releases/, releases=true, snapshots=true),
+[ERROR]   apache.snapshots (http://repository.apache.org/snapshots, releases=false, snapshots=true)
+```
+
+可以注释掉pom中的docs模块
+
+![image-20201205221333361](http://image-picgo.test.upcdn.net/img/20201205221333.png)
+
+
+
+
+
+### 为了避免编译Apache Atlas JanusGraph DB Impl失败
 
 ```
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-remote-resources-plugin:1.5:process (default) on project atlas-graphdb-janus: Error resolving project artifact: Could not transfer artifact com.sleepycat:je:pom:7.4.5 from/to central (http://repo1.maven.org/maven2): Failed to transfer file: http://repo1.maven.org/maven2/com/sleepycat/je/7.4.5/je-7.4.5.pom. Return code is: 501, ReasonPhrase: HTTPS Required. for project com.sleepycat:je:jar:7.4.5 -> [Help 1]
@@ -66,11 +100,23 @@ http://archive.apache.org/dist/atlas/1.1.0/
    cd ~/Downloads/apache-atlas-1.1.0/distro/target/apache-atlas-1.1.0-bin/apache-atlas-1.1.0
    ```
 
-4. 启动atlas，会把内嵌的solr和hbase都启动
+4. 启动atlas，会把内嵌的solr和hbase都启动。
 
    ```
    ~/Downloads/apache-atlas-1.1.0/distro/target/apache-atlas-1.1.0-bin/apache-atlas-1.1.0 » bin/atlas_start.py   
    ```
+
+   ![image-20201206133627262](http://image-picgo.test.upcdn.net/img/20201206133627.png)
+
+   第一次启动会比较慢。会在solr中初始化三个core。
+
+   ![image-20201206133814087](http://image-picgo.test.upcdn.net/img/20201206133814.png)
+
+   ![image-20201206133929897](http://image-picgo.test.upcdn.net/img/20201206133930.png)
+
+   使用hbase shell可以访问atlas内嵌的hbase里的数据。
+
+   ![image-20201206134204278](http://image-picgo.test.upcdn.net/img/20201206134204.png)
 
 5. 跑起来后登陆浏览器查看http://localhost:21000/，默认账号密码都是admin
 
@@ -212,11 +258,50 @@ http://archive.apache.org/dist/atlas/1.1.0/
 ~/Downloads/apache-atlas-1.1.0/distro/target/apache-atlas-1.1.0-bin/apache-atlas-1.1.0 » cp conf/atlas-application.properties ~/cdh5.16/hive-1.1.0-cdh5.16.2/conf
 ```
 
+否则会报如下错误：
+
+```
+2020-12-06 13:44:46,263 ERROR - [main:] ~ Import failed (HiveMetaStoreBridge:176)
+org.apache.atlas.AtlasException: Failed to load application properties
+	at org.apache.atlas.ApplicationProperties.get(ApplicationProperties.java:109)
+	at org.apache.atlas.ApplicationProperties.get(ApplicationProperties.java:71)
+	at org.apache.atlas.hive.bridge.HiveMetaStoreBridge.main(HiveMetaStoreBridge.java:119)
+Caused by: org.apache.commons.configuration.ConfigurationException: Cannot locate configuration source null
+	at org.apache.commons.configuration.AbstractFileConfiguration.load(AbstractFileConfiguration.java:259)
+	at org.apache.commons.configuration.AbstractFileConfiguration.load(AbstractFileConfiguration.java:238)
+	at org.apache.commons.configuration.AbstractFileConfiguration.<init>(AbstractFileConfiguration.java:197)
+	at org.apache.commons.configuration.PropertiesConfiguration.<init>(PropertiesConfiguration.java:284)
+	at org.apache.atlas.ApplicationProperties.<init>(ApplicationProperties.java:54)
+	at org.apache.atlas.ApplicationProperties.get(ApplicationProperties.java:100)
+	... 2 more
+```
 
 
-### 复制相关依赖到atlas的hive hook中
 
-进入目录`~/Downloads/apache-atlas-1.1.0/distro/target/apache-atlas-1.1.0-bin/apache-atlas-1.1.0`中执行。
+### 复制atlas执行import-hive.sh时缺失的依赖到atlas的hive hook中
+
+如果不做这步，会报错：
+
+```
+Enter username for atlas :- admin
+Enter password for atlas :-
+Exception in thread "main" java.lang.NoClassDefFoundError: com/fasterxml/jackson/jaxrs/json/JacksonJaxbJsonProvider
+	at org.apache.atlas.AtlasBaseClient.getClient(AtlasBaseClient.java:253)
+	at org.apache.atlas.AtlasBaseClient.initializeState(AtlasBaseClient.java:425)
+	at org.apache.atlas.AtlasBaseClient.initializeState(AtlasBaseClient.java:420)
+	at org.apache.atlas.AtlasBaseClient.<init>(AtlasBaseClient.java:115)
+	at org.apache.atlas.AtlasClientV2.<init>(AtlasClientV2.java:77)
+	at org.apache.atlas.hive.bridge.HiveMetaStoreBridge.main(HiveMetaStoreBridge.java:131)
+Caused by: java.lang.ClassNotFoundException: com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:382)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	... 6 more
+Failed to import Hive Meta Data!!!
+```
+
+解决的方法是，进入目录`~/Downloads/apache-atlas-1.1.0/distro/target/apache-atlas-1.1.0-bin/apache-atlas-1.1.0`中执行。
 
 ```
 cp server/webapp/atlas/WEB-INF/lib/jackson-jaxrs-base-2.9.6.jar hook/hive/atlas-hive-plugin-impl
@@ -226,7 +311,7 @@ cp server/webapp/atlas/WEB-INF/lib/jackson-jaxrs-json-provider-2.9.6.jar hook/hi
 cp server/webapp/atlas/WEB-INF/lib/jackson-module-jaxb-annotations-2.9.6.jar hook/hive/atlas-hive-plugin-impl
 ```
 
-执行导入hive数据到 atlas。
+补充好依赖jar包后，就可以执行导入hive数据到 atlas。
 
 ```
 ~/Downloads/apache-atlas-1.1.0/distro/target/apache-atlas-1.1.0-bin/apache-atlas-1.1.0 » bin/import-hive.sh   
@@ -237,6 +322,18 @@ log4j:WARN No such property [maxBackupIndex] in org.apache.log4j.PatternLayout.
 Enter username for atlas :- admin
 Enter password for atlas :-
 Hive Meta Data imported successfully!!!
+```
+
+查看import-hive.log日志，可以看到查找到5个hive的数据库，并通过post的方式提交给atlas。
+
+![image-20201206134747094](http://image-picgo.test.upcdn.net/img/20201206134747.png)
+
+而且通过观察日志，可以发现atlas是通过`AtlasBaseClient`提交数据的。
+
+```java
+2020-12-06 13:47:00,905 INFO  - [main:] ~ method=POST path=api/atlas/v2/entity/ contentType=application/json; charset=UTF-8 accept=application/json status=200 (AtlasBaseClient:361)
+2020-12-06 13:47:00,920 INFO  - [main:] ~ method=GET path=api/atlas/v2/entity/guid/ contentType=application/json; charset=UTF-8 accept=application/json status=200 (AtlasBaseClient:361)
+2020-12-06 13:47:00,920 INFO  - [main:] ~ Created hive_table entity: name=hzk.member@primary, guid=db8deb41-f4b0-45c2-998f-c2d6c9ad9369 (HiveMetaStoreBridge:454)
 ```
 
 此时，hive的全量数据已经导入。
