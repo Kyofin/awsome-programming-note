@@ -59,7 +59,7 @@ discovery.uri=http://10.93.6.247:8089
 
 ```
 coordinator=false
-http-server.http.port=8080
+http-server.http.port=8089
 query.max-memory=10GB
 query.max-memory-per-node=1GB
 query.max-total-memory-per-node=2GB
