@@ -16,6 +16,7 @@ https://github.com/databricks/spark-knowledgebase
 https://github.com/knoldus/Play-Spark-Scala
 https://www.zybuluo.com/changedi/note/1413747 // Spark SQL玩起来
 https://databricks.com/blog/2015/07/15/introducing-window-functions-in-spark-sql.html //窗口函数
+https://github.com/marsishandsome/SparkSQL-Internal
 
 
 接口类:
@@ -35,6 +36,7 @@ https://github.com/ezhaar/spark-installer
 https://github.com/BaiGang/spark_multiboost 
 https://github.com/alitouka/spark_dbscan 
 https://github.com/OndraFiedler/spark-recommender
+https://github.com/endymecy/spark-ml-source-analysis
 
 应用类:
 https://github.com/yaooqinn/kyuubi   //spark thrift jdbc增强版
@@ -45,6 +47,21 @@ https://github.com/sigmoidanalytics/spork
 https://github.com/adobe-research/spindle
 https://github.com/adobe-research/spindle 
 https://github.com/hohonuuli/sparknotebook
+https://github.com/edp963/moonbox
+https://github.com/qiniu/QStreaming
+https://github.com/awslabs/deequ
+https://github.com/YotpoLtd/metorikku
+https://github.com/yaooqinn/spark-authorizer
+https://github.com/MrPowers/spark-daria // Spark helper methods to maximize developer productivity.
+https://github.com/bebee4java/ides
+https://github.com/harbby/sylph // Streaming Job Manager.
+https://github.com/teeyog/IQL // adhoc query service based on the spark sql engine.
+https://github.com/intel-analytics/analytics-zoo //A unified Data Analytics and AI platform for distributed TensorFlow, Keras and PyTorch on Apache Spark
+https://github.com/cas-bigdatalab/piflow
+https://github.com/apache/griffin //Data Quality
+https://github.com/allwefantasy/mlsql //The Programming Language Designed For Big Data and AI
+https://github.com/Qihoo360/Quicksql
+https://github.com/InterestingLab/waterdrop
 
 
 ```

@@ -159,6 +159,64 @@ log4j.appender.stdfile.layout.ConversionPattern=[%d] %p %m (%c)%n
 
 
 
+### 收集mysql cdc数据
+
+#### 下载cdc插件
+
+https://repo1.maven.org/maven2/io/debezium/debezium-connector-mysql/1.4.0.Final/debezium-connector-mysql-1.4.0.Final-plugin.tar.gz
+
+
+
+#### 将插件放入自行创建的connect目录
+
+![image-20210125174417619](http://image-picgo.test.upcdn.net/img/20210125174417.png)
+
+
+
+#### 配置config/connect-standalone.properties
+
+使其加载下载的binlog插件。
+
+![image-20210125174508988](http://image-picgo.test.upcdn.net/img/20210125174509.png)
+
+
+
+#### 编写binlog-source配置
+
+conncet-mysqlbinlog-source.properties。
+
+具体参考：https://debezium.io/documentation/reference/1.4/connectors/mysql.html#mysql-property-database-include-list
+
+```
+name=inventory-connector
+connector.class=io.debezium.connector.mysql.MySqlConnector
+database.hostname=hadoop001
+database.port=3307
+database.user=root
+database.password=debezium
+database.server.id=1840541
+database.server.name=fullfillment4
+table.include.list=inventory.t2
+database.history.kafka.bootstrap.servers=hadoop001:9092
+database.history.kafka.topic=dbhistory.fullfillment
+database.history.skip.unparseable.ddl=true
+include.schema.changes=true 
+
+
+```
+
+
+
+#### 启动
+
+```
+ bin/connect-standalone.sh config/connect-standalone.properties config/conncet-mysqlbinlog-source.properties
+```
+
+
+
+
+
 ### 收集sqlserver CDC数据
 
 1. sqlserver开启SQL server agent服务

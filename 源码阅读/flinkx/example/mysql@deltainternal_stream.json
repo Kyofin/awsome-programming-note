@@ -1,0 +1,65 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "parameter": {
+            "username": "root",
+            "password": "eWJmP7yvpccHCtmVb61Gxl2XLzIrRgmT",
+            "connection": [{
+              "jdbcUrl": ["jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8"],
+              "table": ["test"]
+            }],
+            "column": [{
+              "name": "id",
+              "type": "bigint"
+            },{
+              "name": "user_id",
+              "type": "bigint"
+            },{
+              "name": "name",
+              "type": "varchar"
+            }],
+            "customSql": "",
+            "where": "",
+            "splitPk": "id",
+            "increColumn": "id",
+            "startLocation": "20",
+            "polling": true,
+            "pollingInterval": 3000,
+            "queryTimeOut": 1000,
+            "requestAccumulatorInterval": 2
+          },
+          "name": "mysqlreader"
+        },
+        "writer": {
+          "name": "streamwriter",
+          "parameter": {
+            "print": true
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1,
+        "bytes": 0
+      },
+      "errorLimit": {
+        "record": 100
+      },
+      "restore": {
+        "maxRowNumForCheckpoint": 0,
+        "isRestore": true,
+        "restoreColumnName": "id",
+        "restoreColumnIndex": 1
+      },
+      "log" : {
+        "isLogger": false,
+        "level" : "debug",
+        "path" : "",
+        "pattern":""
+      }
+    }
+  }
+}

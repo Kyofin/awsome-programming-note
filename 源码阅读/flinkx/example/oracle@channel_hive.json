@@ -1,0 +1,68 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "parameter": {
+            "username": "YBDBUSER",
+            "password": "Tezb2020a",
+            "connection": [{
+              "jdbcUrl": ["jdbc:oracle:thin:@10.91.22.7:1521:ora11"],
+              "table": ["YBDBUSER.YL_KC22"]
+            }],
+            "column": ["*"],
+            "customSql": "",
+            "where": "",
+            "splitPk": "AAZ213",
+            "fetchSize": 1024,
+            "queryTimeOut": 1000,
+            "requestAccumulatorInterval": 2
+          },
+          "name": "oraclereader"
+        },
+        "writer": {
+          "name" : "hivewriter",
+          "parameter" : {
+            "jdbcUrl" : "jdbc:hive2://10.93.6.167:10000/hzk",
+            "username" : "hive",
+            "password" : "",
+            "fileType" : "orc",
+            "fieldDelimiter" : "",
+            "writeMode" : "overwrite",
+            "compress" : "snappy",
+            "charsetName" : "UTF-8",
+            "maxFileSize" : 1073741824,
+            "tablesColumn" : "{\"YL_KC22\":[{\"key\":\"AAZ213\",\"type\":\"string\"},{\"key\":\"AKE001\",\"type\":\"string\"},{\"key\":\"AKE002\",\"type\":\"string\"},{\"key\":\"AKE005_Y\",\"type\":\"string\"},{\"key\":\"AKE006_Y\",\"type\":\"string\"},{\"key\":\"AKE003\",\"type\":\"string\"},{\"key\":\"AKA063\",\"type\":\"string\"},{\"key\":\"AKA065\",\"type\":\"string\"},{\"key\":\"AKC226\",\"type\":\"string\"},{\"key\":\"AKC225\",\"type\":\"string\"},{\"key\":\"AKB065\",\"type\":\"string\"},{\"key\":\"AKA081\",\"type\":\"string\"},{\"key\":\"AAZ210\",\"type\":\"string\"},{\"key\":\"AAZ217\",\"type\":\"string\"},{\"key\":\"AKA064\",\"type\":\"string\"},{\"key\":\"AAE386\",\"type\":\"string\"},{\"key\":\"AAZ307\",\"type\":\"string\"},{\"key\":\"AKE006\",\"type\":\"string\"},{\"key\":\"AAE310\",\"type\":\"string\"},{\"key\":\"AAE311\",\"type\":\"string\"},{\"key\":\"AKC221\",\"type\":\"string\"},{\"key\":\"AAE036\",\"type\":\"string\"},{\"key\":\"AKB020\",\"type\":\"string\"},{\"key\":\"AKC190\",\"type\":\"string\"},{\"key\":\"YKC610\",\"type\":\"string\"},{\"key\":\"AKC515\",\"type\":\"string\"},{\"key\":\"AKC220\",\"type\":\"string\"},{\"key\":\"AKC350\",\"type\":\"string\"},{\"key\":\"AKA502\",\"type\":\"string\"},{\"key\":\"AKC516\",\"type\":\"string\"}]}",
+            "partition" : "dt",
+            "partitionType" : "DAY",
+            "defaultFS" : "hdfs://hadoop-master",
+            "hadoopConfig" : {
+
+            }
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 16,
+        "bytes": 0
+      },
+      "errorLimit": {
+        "record": 1
+      },
+      "restore": {
+        "maxRowNumForCheckpoint": 0,
+        "isRestore": false,
+        "restoreColumnName": "",
+        "restoreColumnIndex": 0
+      },
+      "log" : {
+        "isLogger": false,
+        "level" : "debug",
+        "path" : "",
+        "pattern":""
+      }
+    }
+  }
+}

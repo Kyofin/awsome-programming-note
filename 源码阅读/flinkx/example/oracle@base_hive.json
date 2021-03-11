@@ -1,0 +1,68 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "parameter": {
+            "username": "YBDBUSER",
+            "password": "Tezb2020a",
+            "connection": [{
+              "jdbcUrl": ["jdbc:oracle:thin:@10.91.22.7:1521:ora11"],
+              "table": ["YBDBUSER.YL_AA01"]
+            }],
+            "column": ["*"],
+            "customSql": "",
+            "where": "",
+            "splitPk": "",
+            "fetchSize": 1024,
+            "queryTimeOut": 1000,
+            "requestAccumulatorInterval": 2
+          },
+          "name": "oraclereader"
+        },
+        "writer": {
+          "name" : "hivewriter",
+          "parameter" : {
+            "jdbcUrl" : "jdbc:hive2://10.93.6.167:10000/hzk",
+            "username" : "hive",
+            "password" : "",
+            "fileType" : "orc",
+            "fieldDelimiter" : "",
+            "writeMode" : "overwrite",
+            "compress" : "GZIP",
+            "charsetName" : "UTF-8",
+            "maxFileSize" : 1073741824,
+            "tablesColumn" : "{\"ODS_YL_AA01\":[{\"key\":\"AAA100\",\"type\":\"string\"},{\"key\":\"AAA102\",\"type\":\"string\"},{\"key\":\"AAA103\",\"type\":\"string\"}]}",
+            "partition" : "dt",
+            "partitionType" : "DAY",
+            "defaultFS" : "hdfs://hadoop-master",
+            "hadoopConfig" : {
+
+            }
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1,
+        "bytes": 0
+      },
+      "errorLimit": {
+        "record": 1
+      },
+      "restore": {
+        "maxRowNumForCheckpoint": 0,
+        "isRestore": false,
+        "restoreColumnName": "",
+        "restoreColumnIndex": 0
+      },
+      "log" : {
+        "isLogger": false,
+        "level" : "debug",
+        "path" : "",
+        "pattern":""
+      }
+    }
+  }
+}
