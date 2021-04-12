@@ -102,6 +102,12 @@ https://github.com/InterestingLab/waterdrop
       .config("spark.serializer","org.apache.spark.serializer.KryoSerializer")
         // 允许sql中使用corss join
         .config("spark.sql.crossJoin.enabled","true")
+        // 不允许开web ui
+       .config("spark.ui.enabled", "false")
+        // 设置rdd和shuffle数据的本地存放目录
+       .config("spark.local.dir","/Users/huzekang/tmp/spark_local_dir")
+
+
 ```
 
 HDFS HA

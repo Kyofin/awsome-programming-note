@@ -1,0 +1,38 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "parameter": {
+            "schema": "ROMA_LOGMINER",
+            "password": "ZS123",
+            "cat": "insert,update,delete",
+            "jdbcUrl": "jdbc:oracle:thin:@//10.91.22.7:1521/ora11",
+            "readPosition": "current",
+            "pavingData": true,
+            "table": [
+              "TAO.T_USER"
+            ],
+            "username": "ZS"
+          },
+          "name": "oraclelogminerreader"
+        },
+        "writer": {
+          "parameter": {
+            "print": true
+          },
+          "name": "streamwriter"
+        }
+      }
+    ],
+    "setting": {
+      "restore": {
+        "isRestore": true,
+        "isStream": true
+      },
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

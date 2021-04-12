@@ -1,0 +1,88 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "hbasereader",
+          "parameter": {
+            "hbaseConfig": {
+              "hbase.zookeeper.property.clientPort": "2181",
+              "hbase.cluster.distributed": "true",
+              "hbase.zookeeper.quorum": "10.93.6.167",
+              "zookeeper.znode.parent": "/hbase-unsecure"
+            },
+            "table": "nlp:t1",
+            "encodig": "utf-8",
+            "column": [
+              {
+                "name": "rowkey",
+                "type": "string"
+              },
+              {
+                "name": "c:DEPT_NAME",
+                "type": "string"
+              },
+              {
+                "name": "c:PAT_CHIEF_DESC",
+                "type": "string"
+              }
+            ],
+            "range": {
+              "startRowkey": "",
+              "endRowkey": "",
+              "isBinaryRowkey": false
+            }
+          }
+        },
+        "writer": {
+          "name": "mysqlwriter",
+          "parameter": {
+            "username": "qpt",
+            "password": "ydhl_QPT20200615",
+            "connection": [
+              {
+                "jdbcUrl": "jdbc:mysql://10.91.22.8:33066/tao_test?rewriteBatchedStatements=true",
+                "table": [
+                  "hbase_test"
+                ]
+              }
+            ],
+            "preSql": [
+              "truncate table hbase_test;"
+            ],
+            "postSql": [],
+            "writeMode": "insert",
+            "column": [
+              "patient_id",
+              "dept_name",
+              "pat_chief"
+            ],
+            "batchSize": 4096
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1,
+        "bytes": 0
+      },
+      "errorLimit": {
+        "record": 100
+      },
+      "restore": {
+        "maxRowNumForCheckpoint": 0,
+        "isRestore": false,
+        "isStream": false,
+        "restoreColumnName": "",
+        "restoreColumnIndex": 0
+      },
+      "log": {
+        "isLogger": false,
+        "level": "debug",
+        "path": "",
+        "pattern": ""
+      }
+    }
+  }
+}

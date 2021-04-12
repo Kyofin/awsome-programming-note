@@ -1,0 +1,129 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "parameter": {
+            "path": "/apps/hive/warehouse/chinaunicom_medical_zs_university.db/ads_inhosp_fee_detail_ss_daliy/dt=20210304",
+            "hadoopConfig": {
+            },
+            "column": [
+              {
+                "name": "patient_id",
+                "index": 1,
+                "type": "STRING"
+              },
+              {
+                "name": "mi_code",
+                "index": 2,
+                "type": "STRING"
+              },
+              {
+                "name": "visit_card_no",
+                "index": 3,
+                "type": "STRING"
+              },
+              {
+                "name": "inhosp_index_no",
+                "index": 4,
+                "type": "STRING"
+              },
+              {
+                "name": "inhosp_no",
+                "index": 5,
+                "type": "STRING"
+              },
+              {
+                "name": "receipt_no",
+                "index": 6,
+                "type": "STRING"
+              },
+              {
+                "name": "detail_id",
+                "index": 7,
+                "type": "STRING"
+              },
+              {
+                "name": "settle_no",
+                "index": 8,
+                "type": "STRING"
+              },
+              {
+                "name": "item_code",
+                "index": 9,
+                "type": "STRING"
+              },
+              {
+                "name": "item_name",
+                "index": 10,
+                "type": "STRING"
+              },
+              {
+                "name": "item_amount",
+                "index": 11,
+                "type": "DOUBLE"
+              },
+              {
+                "name": "charge_date_time",
+                "index": 12,
+                "type": "DATE"
+              }
+            ],
+            "defaultFS": "hdfs://10.93.6.247:8020",
+            "fieldDelimiter": "\u0001",
+            "fileType": "orc"
+          },
+          "name": "hdfsreader"
+        },
+        "writer": {
+          "name": "mysqlwriter",
+          "parameter": {
+            "username": "qpt",
+            "password": "ydhl_QPT20200615",
+            "connection": [
+              {
+                "jdbcUrl": "jdbc:mysql://10.91.22.8:33066/chinaunicom_medical_health2_dev2.1?rewriteBatchedStatements=true",
+                "table": [
+                  "dw_inhosp_fee_detail"
+                ]
+              }
+            ],
+            "preSql": [
+              "truncate table dw_inhosp_fee_detail;"
+            ],
+            "postSql": [],
+            "writeMode": "insert",
+            "column": [
+              "patient_id",
+              "mi_code",
+              "visit_card_no",
+              "inhosp_index_no",
+              "inhosp_no",
+              "receipt_no",
+              "detail_id",
+              "settle_no",
+              "item_code",
+              "item_name",
+              "item_amount",
+              "charge_date_time"
+            ],
+            "batchSize": 4096
+          }
+        }
+      }
+    ],
+    "setting": {
+      "log": {
+        "isLogger": true,
+        "level": "info",
+        "path": "/tmp/dtstack/flinkx/"
+      },
+      "speed": {
+        "channel": 10
+      },
+      "restore": {
+        "isRestore": false
+      }
+    }
+  }
+}

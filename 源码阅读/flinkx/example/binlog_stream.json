@@ -1,0 +1,37 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "parameter": {
+            "filter": "dolphinscheduler\\.t_ds_task_instance",
+            "password": "Root@123",
+            "database": "dolphinscheduler",
+            "port": 3306,
+
+            "cat": "DELETE,INSERT,UPDATE",
+            "host": "10.93.6.247",
+            "jdbcUrl": "jdbc:mysql://10.93.6.247:3306/dolphinscheduler?useSSL=false",
+            "pavingData": true,
+            "username": "root"
+          },
+          "name": "binlogreader"
+        },
+        "writer": {
+          "parameter": {
+            "print": true
+          },
+          "name": "streamwriter"
+        }
+      }
+    ],
+    "setting": {
+      "restore": {
+        "isStream": true
+      },
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

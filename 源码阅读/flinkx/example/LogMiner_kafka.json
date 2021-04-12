@@ -1,0 +1,42 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "parameter": {
+            "schema": "ROMA_LOGMINER",
+            "password": "ZS123",
+            "cat": "insert,update,delete",
+            "jdbcUrl": "jdbc:oracle:thin:@//10.91.22.7:1521/ora11",
+            "readPosition": "current",
+            "pavingData": true,
+            "table": [
+              "TAO.T_USER"
+            ],
+            "username": "ZS"
+          },
+          "name": "oraclelogminerreader"
+        },
+        "writer": {
+          "parameter": {
+            "timezone": "UTC",
+            "topic": "flinkx_oracle_miner",
+            "producerSettings": {
+              "bootstrap.servers": "10.93.6.167:6667"
+            }
+          },
+          "name": "kafkawriter"
+        }
+      }
+    ],
+    "setting": {
+      "restore": {
+        "isRestore": true,
+        "isStream": true
+      },
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

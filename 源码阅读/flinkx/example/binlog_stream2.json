@@ -1,0 +1,36 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "parameter": {
+            "filter": "digital_team_platform\\.t1",
+            "password": "ydhl_QPT20200615",
+            "database": "digital_team_platform",
+            "port": 33066,
+            "cat": "DELETE,INSERT,UPDATE",
+            "host": "10.91.22.8",
+            "jdbcUrl": "jdbc:mysql://10.91.22.8:33066/digital_team_platform?useSSL=false",
+            "pavingData": true,
+            "username": "qpt"
+          },
+          "name": "binlogreader"
+        },
+        "writer": {
+          "parameter": {
+            "print": true
+          },
+          "name": "streamwriter"
+        }
+      }
+    ],
+    "setting": {
+      "restore": {
+        "isStream": true
+      },
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}
