@@ -46,7 +46,17 @@ curl -v "http://10.93.6.8:6188/ws/v1/timeline/metrics?metricNames=dfs.FSNamesyst
 /usr/lib/ams-hbase/bin/hbase --config /etc/ams-hbase/conf shell 
 ```
 
+可以看到ambar metrics collector自带的hbase里存储的监控信息表。
 
+![image-20210426091754283](http://image-picgo.test.upcdn.net/img/20210426091754.png)
+
+```
+scan 'METRIC_RECORD_DAILY', LIMIT => 1
+```
+
+可以看到hbase中的数据。
+
+![image-20210426092349941](http://image-picgo.test.upcdn.net/img/20210426092349.png)
 
 ## 用phonenix客户端查看监控数据
 

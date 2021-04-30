@@ -110,7 +110,7 @@ https://github.com/InterestingLab/waterdrop
 
 ```
 
-HDFS HA
+如果hdfs集群开启了HA，则需添加如下配置：
 
 ```JAVA
 
@@ -205,6 +205,32 @@ res1: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 
 - `spark.sql.adaptive.skewedPartitionRowCountThreshold` 设置了一个 Partition 被视为倾斜 Partition 的行数下限，也即行数低于该值的 Partition 不会被当作倾斜 Partition 处理。其默认值为 10L * 1000 * 1000 即一千万
 - `spark.sql.adaptive.skewedPartitionSizeThreshold` 设置了一个 Partition 被视为倾斜 Partition 的大小下限，也即大小小于该值的 Partition 不会被视作倾斜 Partition。其默认值为 64 * 1024 * 1024 也即 64MB
 - `spark.sql.adaptive.skewedPartitionFactor` 该参数设置了倾斜因子。如果一个 Partition 的大小大于 `spark.sql.adaptive.skewedPartitionSizeThreshold` 的同时大于各 Partition 大小中位数与该因子的乘积，或者行数大于 `spark.sql.adaptive.skewedPartitionRowCountThreshold` 的同时大于各 Partition 行数中位数与该因子的乘积，则它会被视为倾斜的 Partition
+
+
+
+
+
+## spark streaming日志过多解决
+
+需要先建log4j.properties文件。
+
+```
+log4j.rootCategory=ERROR, console
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.target=System.err
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+```
+
+然后在spark-sumbit提交作业时设置日志级别
+
+```
+spark-submit 
+--conf "spark.driver.extraJavaOptions=-Dlog4j.configuration=file:log4j.properties"
+```
+
+
+
 
 
 
