@@ -1556,3 +1556,20 @@ https://github.com/Intel-bigdata/OAP
 
 
 ## [spark-df-profiling](https://github.com/julioasotodv/spark-df-profiling)
+
+
+
+
+
+## Sparklens
+
+它是一个内置 Spark Scheduler 模拟器的 Spark 分析和性能预测工具
+
+
+
+
+
+## [spark-ranger](https://github.com/NetEase/spark-ranger)
+
+ACL Management for Apache Spark SQL with Apache Ranger
+
