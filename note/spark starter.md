@@ -106,6 +106,9 @@ https://github.com/InterestingLab/waterdrop
        .config("spark.ui.enabled", "false")
         // 设置rdd和shuffle数据的本地存放目录
        .config("spark.local.dir","/Users/huzekang/tmp/spark_local_dir")
+         // 设置sparkUI端口占用重试次数
+       .config("spark.port.maxRetries","100")
+
 
 
 ```
@@ -227,6 +230,16 @@ log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: 
 ```
 spark-submit 
 --conf "spark.driver.extraJavaOptions=-Dlog4j.configuration=file:log4j.properties"
+```
+
+
+
+## spark-shell显示INFO日志
+
+修改`conf/log4j.properties`文件。将repl的默认日志级别WARN修改成INFO。
+
+```
+log4j.logger.org.apache.spark.repl.Main=INFO
 ```
 
 
@@ -1573,3 +1586,14 @@ https://github.com/Intel-bigdata/OAP
 
 ACL Management for Apache Spark SQL with Apache Ranger
 
+
+
+## Optimus
+
+在Spark（Pyspark）的支持下，Optimus允许用户使用自己的或一组预先创建的数据转换功能来清理数据，对其进行概要分析并应用与数据分析和机器学习等场景，可以轻松地利用python语言进行所有这些操作。Optimus主要关注与以下几个方面：
+
+创建一个可靠的API来访问和处理数据。
+
+让用户轻松地从Pandas迁移。
+
+使数据探索更加容易。

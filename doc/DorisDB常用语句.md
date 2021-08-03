@@ -24,7 +24,25 @@ DROP USER 'hzk'
 
 
 
-## 建表
+
+
+
+
+## 建表相关
+
+### 建表注意事项
+
+建表中有三个注意事项，这几个选择会比较大的影响到测试结果：
+
+1. Bucket的数量选择和分桶键的选择
+
+   Bucket的数量是对性能影响比较大的因素之一，首先我们希望选择合理的分桶键（DISTRIBUTED BY HASH(key))，来保证数据在各个bucket中尽可能均衡，如果碰到数据倾斜严重的数据可以使用多列作为分桶键，或者采用MD5 hash以后作为分桶键，具体可以参考[分桶键选择](http://doc.dorisdb.com/2142135)，这里我们都统一使用唯一的key列。
+
+2. 建表的数据类型
+
+   数据类型的选择对性能测试的结果是有一定影响的，比如Decimal/String的运算一般比int/bigint要慢，所以在实际场景中我们应该尽可能准确的使用数据类型，从而达到最好的效果，比如可以使用Int/Bigint的字段就尽量避免使用String，如果是日期类型也多使用Date/Datetime以及相对应的时间日期函数，而不是用string和相关字符串操作函数来处理
+
+3. 字段是否可以为空
 
 ### 明细模型
 
@@ -76,6 +94,41 @@ ALTER SYSTEM ADD BACKEND "10.93.11.247:9050";
 alter system decommission backend "10.93.11.247:9050";
 alter system dropp backend "10.93.11.247:9050";
 ```
+
+
+
+检查加载的plugin
+
+```
+show plugins
+```
+
+
+
+## 调优相关
+
+```
+SHOW TABLET FROM example_db.table_name;
+```
+
+该语句用于显示 tablet 相关的信息（仅管理员使用）。
+
+
+
+```
+SHOW DATA from ssb.lineorder 
+```
+
+该语句用于展示表的数据容量大小、副本数量以及统计行数。
+
+
+
+```
+use chinaunicom_medical_health2_dev2_1;
+show data;
+```
+
+该语句用于展示整库的数据容量大小、副本数量以及统计行数。
 
 
 
