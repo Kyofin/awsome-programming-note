@@ -1,5 +1,11 @@
 # Ozone1.0.0-quickstart
 
+## 架构图
+
+Ozone由三部分组成，分别为`Ozone Manager（OM）`、`Storage Container Manager（SCM）`和`Datanodes（DN）`
+
+![img](http://image-picgo.test.upcdn.net/img/20210804171904.png)
+
 ## 资源文件准备
 
 ozone1.0.0二进制部署包
@@ -176,9 +182,7 @@ sbin/stop-ozone.sh
 
 
 
-
-
-## aws cli
+## 常用aws cli命令
 
 aws s3api --endpoint http://localhost:9878/ create-bucket --bucket=wordcount
 
@@ -198,7 +202,7 @@ aws s3 --endpoint http://localhost:9878  rm  s3://wordcount/Doc1
 
 
 
-## ozone cli
+## 常用ozone cli命令
 
 - 创建 volume
 
@@ -228,93 +232,5 @@ diff README2.txt README.md
 
 
 
-## 使用cdh5.16.2的hdfs cli访问Ozone
-
-配置cdh-hadoop的core-site-xml，增加下面配置
-
-```XML
-<property>
-  <name>fs.AbstractFileSystem.o3fs.impl</name>
-  <value>org.apache.hadoop.fs.ozone.OzFs</value>
-</property>
-<property>
-  <name>fs.defaultFS</name>
-  <value>o3fs://bucket.volume.localhost:6789</value>
-</property>
-```
-
-注意：上面的`bucket`是ozone的bucket名，`volume`是ozone的volume名，`localhos:6789`是ozone的om address。
-
-执行hdfs cli前，需要执行下面命令将ozone lib加载到hadoop classpath中。
-
-```bash
-export HADOOP_CLASSPATH=/Users/huzekang/Downloads/hadoop-ozone-filesystem-hadoop2-1.0.0.jar:$HADOOP_CLASSPATH
-```
-
-使用hdfs cli测试。
-
-### 查看数据：
-
-```
-hadoop fs -ls /                                                                                           
-hadoop fs -ls o3fs://bucket.volume.localhost:6789/
-```
-
-### 上传数据时：
-
-```
-hadoop fs -put table1_data /                                                                              
-```
-
-但是这里会报错，`put: Allocated 0 blocks. Requested 1 blocks`。估计这个错误是由于我只起了一个datanode，但客户端请求要上传3副本导致的。
-
-解决办法：
-
-复制ozone-site.xml到hdfs cli的配置文件目录，并且该文件中要指定`ozone.replication`为1。
-
-```
-cp ~/opt/ozone-1.0.0/etc/hadoop/ozone-site.xml ~/cdh5.16/hadoop-2.6.0-cdh5.16.2/etc/hadoop/
-```
-
-### 删除数据：
-
-```
-hadoop fs -rm o3fs://bucket.volume.localhost:6789/README.md
-```
 
 
-
-## 使用Spark2.4.6访问Ozone
-
-### 修改spark配置文件
-
-修改SPAKR_HOME里的conf目录下的core-site.xml
-
-```
-<property>
-  <name>fs.AbstractFileSystem.o3fs.impl</name>
-  <value>org.apache.hadoop.fs.ozone.OzFs</value>
-</property>
-<property>
-  <name>fs.defaultFS</name>
-  <value>o3fs://bucket.volume.localhost:6789</value>
-</property>
-```
-
-### 启动spark-shell测试
-
-```
-spark-shell --jars /Users/huzekang/Downloads/hadoop-ozone-filesystem-hadoop2-1.0.0.jar --driver-class-path /Users/huzekang/Downloads/hadoop-ozone-filesystem-hadoop2-1.0.0.jar
-```
-
-#### 读ozone数据测试
-
-![image-20210803180651317](http://image-picgo.test.upcdn.net/img/20210803180651.png)
-
-#### 写数据到ozone测试
-
-![image-20210803181122817](http://image-picgo.test.upcdn.net/img/20210803181122.png)
-
-#### 使用hdfs cli检验产出的数据
-
-![image-20210803181233159](http://image-picgo.test.upcdn.net/img/20210803181233.png)

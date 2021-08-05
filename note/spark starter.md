@@ -627,7 +627,7 @@ export http_proxy=10.0.0.17:1087
 
 
 
-# spark sql的元数据使用pg替代derby数据库
+## spark sql的元数据使用pg替代derby数据库
 
 在spark目录的conf文件夹中，创建hive-site.xml
 
