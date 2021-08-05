@@ -22,11 +22,22 @@ https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-ozone-filesystem-hadoop2
 
 ## 单节点手动部署Ozone
 
-**注意**：
+**注意**：当系统环境变量里有HADOOP_HOME时，需要先注释掉。因为在很多ozone自带的shell脚本过程中都在`HADOOP_HOME`目录下寻找ozone的文件，就会报找不到的错误。
+错误如下：
+
+![image-20210805105954808](http://image-picgo.test.upcdn.net/img/20210805105954.png)
+
+解决的办法：
+
+执行ozone的脚本前，输入以下命令。
 
 ```
-当系统环境变量里有HADOOP_HOME时，需要先注释掉，否则在安装ozone过程中，执行的ozone的脚本都会寻找HADOOP_HOME目录下的文件，就会报找不到的错误。
+export HADOOP_HOME=
 ```
+
+
+
+
 
 ### 修改配置
 
@@ -73,6 +84,21 @@ bin/ozone genconf .
         <name>ozone.om.address</name>
         <value>localhost:6789</value>
     </property>
+```
+
+- 开启prometheus监控
+
+开启后，访问下面url即可看到监控数据。
+
+http://scm:9874/prom
+
+http://ozoneManager:9876/prom
+
+```
+<property>
+   <name>hdds.prometheus.endpoint.enabled</name>
+   <value>true</value>
+ </property>
 ```
 
 - 其他
@@ -149,14 +175,17 @@ bin/ozone --daemon start datanode
  bin/ozone --daemon start s3g
 ```
 
-如果要关闭ozone，则执行下面命令
+如果要快速关闭ozone所有组件，则执行下面命令
 
 ```
-bin/ozone  --daemon stop datanode
 sbin/stop-ozone.sh
 ```
 
+如果要快速启动ozone所有组件，则执行下面命令
 
+```
+sbin/start-ozone.sh
+```
 
 
 
@@ -172,11 +201,17 @@ sbin/stop-ozone.sh
 
 ![image-20210803171506944](http://image-picgo.test.upcdn.net/img/20210803171507.png)
 
-### S3 gateway
+### Recon UI
+
+![image-20210805143655223](http://image-picgo.test.upcdn.net/img/20210805143655.png)
+
+
+
+### S3 gateway UI
 
 ![image-20210803172819041](http://image-picgo.test.upcdn.net/img/20210803172819.png)
 
-### datanode
+### HDDS Datanode UI
 
 ![image-20210803173906201](http://image-picgo.test.upcdn.net/img/20210803173906.png)
 
@@ -228,6 +263,12 @@ ozone sh key list /hive/dc2
 ozone sh key get /hive/dc2/README.md README2.txt
 diff README2.txt README.md
 
+```
+
+- 查看数据
+
+```
+ozone sh key cat /volume/bucket/README.md
 ```
 
 

@@ -2,7 +2,7 @@
 
 ## 使用cdh5.16.2的hdfs cli访问Ozone
 
-配置cdh-hadoop的core-site-xml，增加下面配置
+配置cdh-hadoop的`core-site-xml`，增加下面配置
 
 ```XML
 <property>
