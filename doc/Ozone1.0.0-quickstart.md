@@ -189,6 +189,14 @@ sbin/start-ozone.sh
 
 
 
+## ozone默认配置
+
+| 配置项           | 端口         |
+| ---------------- | ------------ |
+| ozone.om.address | 0.0.0.0:9862 |
+
+
+
 ## ozone默认ui
 
 ### Ozone manager UI

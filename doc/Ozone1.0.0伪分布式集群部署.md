@@ -28,7 +28,7 @@ export OZONE_REPLICATION_FACTOR=3
 
 
 
-## 测试
+## 测试使用
 
 使用`docker-compose`命令进入其中一个datanode容器中可以执行ozone的命令进行测试。
 
@@ -49,4 +49,6 @@ ozone sh volume list
 ```
 ozone freon randomkeys --numOfVolumes=10 --numOfBuckets 10 --numOfKeys 1000  --replicationType=RATIS --factor=THREE
 ```
+
+
 
