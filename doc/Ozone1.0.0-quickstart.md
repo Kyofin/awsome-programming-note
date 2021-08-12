@@ -1,5 +1,11 @@
 # Ozone1.0.0-quickstart
 
+## 参考文档
+
+https://cwiki.apache.org/confluence/display/HADOOP/Try+out+Ozone#TryoutOzone-Multi-NodeOzoneCluster
+
+https://ozone.apache.org/docs/1.1.0/zh/interface/javaapi.html
+
 ## 架构图
 
 Ozone由三部分组成，分别为`Ozone Manager（OM）`、`Storage Container Manager（SCM）`和`Datanodes（DN）`
