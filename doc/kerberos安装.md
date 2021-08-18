@@ -189,3 +189,13 @@ Valid starting       Expires              Service principal
 这里要注意：
 
 通过秘钥登录后，就不能通过用户名和密码登录了
+
+
+
+## 查看keytab中的principal
+
+```
+klist -kt ozone.keytab
+```
+
+![image-20210817144932509](http://image-picgo.test.upcdn.net/img/20210817144932.png)

@@ -158,7 +158,7 @@ export JAVA_HOME=/opt/jdk1.8.0_181
 
 ```
 scp -r /opt/ozone-1.0.0/ ozone003:/opt/
-scp -r /opt/ozone-1.0.0/ ozone001:/opt/
+scp -r /opt/ozone-1.0.0/ ozone002:/opt/
 ```
 
 
