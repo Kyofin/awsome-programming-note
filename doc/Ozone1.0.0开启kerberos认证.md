@@ -53,15 +53,6 @@ ozone-site.xm
         <name>ozone.om.address</name>
         <value>ozone001.hadoop.com</value>
     </property>
-    <property>
-        <name>ozone.metadata.dirs</name>
-        <value>/home/huzekang/software/ozone-1.0.0/metadata</value>
-    </property>
-
-<property>
-    <name>dfs.datanode.data.dir</name>
-    <value>file:///home/huzekang/software/ozone-1.0.0/data</value>
-</property>
 
     <property>
         <name>ozone.scm.client.address</name>
@@ -74,56 +65,63 @@ ozone-site.xm
 
 
 
-<property>
-    <name>ozone.security.enabled</name>
-    <value>true</value>
-</property>
-<property>
-    <name>hadoop.security.authentication</name>
-    <value>kerberos</value>
-</property>
+    <property>
+        <name>ozone.security.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hadoop.security.authentication</name>
+        <value>kerberos</value>
+    </property>
 
-<property>
-    <name>hdds.scm.kerberos.principal</name>
-    <value>scmservice/ozone001.hadoop.com@HADOOP.COM</value>
-</property>
-<property>
-    <name>hdds.scm.kerberos.keytab.file</name>
-    <value>/home/huzekang/ozone.keytab</value>
-</property>
-<property>
-    <name>hdds.scm.http.kerberos.principal</name>
-    <value>ozonehttpservice/ozone001.hadoop.com@HADOOP.COM</value>
-</property>
-<property>
-    <name>hdds.scm.http.kerberos.keytab</name>
-    <value>/home/huzekang/ozone.keytab</value>
-</property>
-
-
-
-<property>
-    <name>ozone.om.kerberos.principal</name>
-    <value>omservice/ozone001.hadoop.com@HADOOP.COM</value>
-</property>
-<property>
-    <name>ozone.om.kerberos.keytab.file</name>
-    <value>/home/huzekang/ozone.keytab</value>
-</property>
-<property>
-    <name>ozone.om.http.kerberos.principal</name>
-    <value>ozonehttpservice/ozone001.hadoop.com@HADOOP.COM</value>
-</property>
-<property>
-    <name>ozone.om.http.kerberos.keytab</name>
-    <value>/home/huzekang/ozone.keytab</value>
-</property>
+    <property>
+        <name>hdds.scm.kerberos.principal</name>
+        <value>scmservice/ozone001.hadoop.com@HADOOP.COM</value>
+    </property>
+    <property>
+        <name>hdds.scm.kerberos.keytab.file</name>
+        <value>/Users/huzekang/study/bigdata-spark/spark-ozone/src/main/resources/ozone.keytab</value>
+    </property>
+    <property>
+        <name>hdds.scm.http.kerberos.principal</name>
+        <value>ozonehttpservice/ozone001.hadoop.com@HADOOP.COM</value>
+    </property>
+    <property>
+        <name>hdds.scm.http.kerberos.keytab</name>
+        <value>/Users/huzekang/study/bigdata-spark/spark-ozone/src/main/resources/ozone.keytab</value>
+    </property>
 
 
 
+    <property>
+        <name>ozone.om.kerberos.principal</name>
+        <value>omservice/ozone001.hadoop.com@HADOOP.COM</value>
+    </property>
+    <property>
+        <name>ozone.om.kerberos.keytab.file</name>
+        <value>/Users/huzekang/study/bigdata-spark/spark-ozone/src/main/resources/ozone.keytab</value>
+    </property>
+    <property>
+        <name>ozone.om.http.kerberos.principal</name>
+        <value>ozonehttpservice/ozone001.hadoop.com@HADOOP.COM</value>
+    </property>
+    <property>
+        <name>ozone.om.http.kerberos.keytab</name>
+        <value>/Users/huzekang/study/bigdata-spark/spark-ozone/src/main/resources/ozone.keytab</value>
+    </property>
 
 
 
+    <property>
+        <name>ozone.s3g.authentication.kerberos.principal</name>
+        <value>s3g/ozone001.hadoop.com@HADOOP.COM</value>
+    </property>
+    <property>
+        <name>ozone.s3g.keytab.file</name>
+        <value>/Users/huzekang/study/bigdata-spark/spark-ozone/src/main/resources/ozone.keytab</value>
+    </property>
+
+  
 </configuration>
 ```
 
@@ -131,7 +129,7 @@ ozone-site.xm
 
 hdfs-site.xml
 
-```
+```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <configuration>
     <property>
@@ -152,12 +150,16 @@ hdfs-site.xml
 
 ## 测试安全的ozone集群
 
-使用ozone自带测试工具写入数据
+### Java客户端
 
-```
- bin/ozone freon rk --numOfVolumes=1 --numOfBuckets=1 --numOfKeys=100
-```
+使用OzoneClient进行测试
 
-发现无法写入，提示需要kerberos认证。
+![image-20210818120541140](http://image-picgo.test.upcdn.net/img/20210818120541.png)
 
-![image-20210817190358241](http://image-picgo.test.upcdn.net/img/20210817190358.png)
+准备好如下文件：
+
+![image-20210818120600980](http://image-picgo.test.upcdn.net/img/20210818120601.png)
+
+可以看到运行后的结果：
+
+![image-20210818120653202](http://image-picgo.test.upcdn.net/img/20210818120653.png)

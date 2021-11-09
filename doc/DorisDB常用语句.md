@@ -105,6 +105,17 @@ show plugins
 
 
 
+## 查表容量
+
+```
+use chinaunicom_medical_health2_dev2_1;
+SHOW DATA ;
+```
+
+![image-20210918113338656](http://image-picgo.test.upcdn.net/img/20210918113338.png)
+
+
+
 ## 调优相关
 
 ```

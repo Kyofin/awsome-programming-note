@@ -1597,3 +1597,71 @@ ACL Management for Apache Spark SQL with Apache Ranger
 让用户轻松地从Pandas迁移。
 
 使数据探索更加容易。
+
+
+
+
+
+
+
+## [spline-spark-agent](https://github.com/AbsaOSS/spline-spark-agent/blob/develop/build-all.sh)
+
+可以解析spark任务中的输入和输出的血缘关系。支持DataSource为hive、xml、jdbc、execl、kafka
+
+![image-20211014190312095](http://image-picgo.test.upcdn.net/img/20211014190312.png)
+
+结合spline（https://absaoss.github.io/spline/）就可以看到血缘关系图。
+
+![](http://image-picgo.test.upcdn.net/img/20211014190611.png)
+
+
+
+# sparkMeasure
+
+可以用于测量 Spark 任务指标和 SQL 指标。
+
+https://github.com/LucaCanali/sparkMeasure
+
+```
+val stageMetrics = ch.cern.sparkmeasure.StageMetrics(spark)
+stageMetrics.runAndMeasure(spark.sql("select count(*) from range(1000) cross join range(1000) cross join range(1000)").show())
+```
+
+可以看到如下输出
+
+```
+Scheduling mode = FIFO
+Spark Context default degree of parallelism = 8
+Aggregated Spark stage metrics:
+numStages => 3
+numTasks => 17
+elapsedTime => 13520 (14 s)
+stageDuration => 13411 (13 s)
+executorRunTime => 100020 (1.7 min)
+executorCpuTime => 98899 (1.6 min)
+executorDeserializeTime => 4358 (4 s)
+executorDeserializeCpuTime => 1887 (2 s)
+resultSerializationTime => 2 (2 ms)
+jvmGCTime => 56 (56 ms)
+shuffleFetchWaitTime => 0 (0 ms)
+shuffleWriteTime => 11 (11 ms)
+resultSize => 19955 (19.0 KB)
+diskBytesSpilled => 0 (0 Bytes)
+memoryBytesSpilled => 0 (0 Bytes)
+peakExecutionMemory => 0
+recordsRead => 2000
+bytesRead => 0 (0 Bytes)
+recordsWritten => 0
+bytesWritten => 0 (0 Bytes)
+shuffleRecordsRead => 8
+shuffleTotalBlocksFetched => 8
+shuffleLocalBlocksFetched => 8
+shuffleRemoteBlocksFetched => 0
+shuffleTotalBytesRead => 472 (472 Bytes)
+shuffleLocalBytesRead => 472 (472 Bytes)
+shuffleRemoteBytesRead => 0 (0 Bytes)
+shuffleRemoteBytesReadToDisk => 0 (0 Bytes)
+shuffleBytesWritten => 472 (472 Bytes)
+shuffleRecordsWritten => 8
+```
+
