@@ -53,6 +53,15 @@ bin/spark-shell  --master local \
 
 
 
+如果不想次次都在启动时加入`--jars`，可以将下面内容加入到`spark-default.conf`。
+
+```shell
+spark.driver.extraClassPath     /home/admin/spark-3.1.2-bin-hadoop2.7/dependency_libs/iceberg/iceberg-spark3-runtime-0.12.1.jar
+spark.executor.extraClassPath     /home/admin/spark-3.1.2-bin-hadoop2.7/dependency_libs/iceberg/iceberg-spark3-runtime-0.12.1.jar
+```
+
+
+
 ## 快速体验名为Spark_Catalog的Catalog
 
 ### createTable
