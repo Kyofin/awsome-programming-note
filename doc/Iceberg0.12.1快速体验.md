@@ -16,6 +16,23 @@ docker pull peterpoker/spark3-all-in-one
 
 参考地址：https://hub.docker.com/r/peterpoker/spark3-all-in-one
 
+快速启动容器：
+
+```
+docker run -d \                                                                         
+-m 8G \
+-p 4040:4040 \
+-p 13306:3306 \
+-p 7070:7070 \
+-p 8088:8088 \
+-p 50070:50070 \
+-p 8032:8032 \
+-p 8042:8042 \
+-p 2181:2181 \
+--name spark3-all-in-one \
+peterpoker/spark3-all-in-one:1.0
+```
+
 
 
 ## 下载Iceberg包
@@ -25,6 +42,52 @@ wget https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark3-runtime/0.
 ```
 
 
+
+## iceberg内置Catalog区别
+
+iceberg0.12.1内置了两个catalog的实现类：
+
+
+
+**org.apache.iceberg.spark.SparkCatalog**
+
+官方的介绍： A Spark TableCatalog implementation that wraps an Iceberg
+
+参数说明：
+
+type是catalog type，可以是hadoop或者hive。
+
+uri是Hive Metastore URI ，只有当type选择hive时需要。
+
+warehouse是iceberg  warehouse，只有当type选择hadoop时需要。
+
+
+
+**org.apache.iceberg.spark.SparkSessionCatalog** 
+
+官方的介绍：A Spark catalog that can also load non-Iceberg tables. 
+
+在这个catalog内，会用spark原来内置的`org.apache.spark.sql.execution.datasources.v2.V2SessionCatalog`来操作hive表以及非Iceberg表。而且，还会初始化一个SparkCatalog用于操作 Iceberg，具体代码可以参考`org.apache.iceberg.spark.SparkSessionCatalog#buildSparkCatalog` 。
+
+![image-20220110155321217](http://image-picgo.test.upcdn.net/img/20220110155321.png)
+
+需要注意的是，当使用SparkSessionCatalog时，catalog的名字一定要是**spark_catalog**。如果catalog改成任意的名字，例如spark_catalog2，则启动后会存在**spark_catalog**和**spark_catalog2**两个catalog。
+
+![image-20220110161721953](http://image-picgo.test.upcdn.net/img/20220110161722.png)
+
+spark_catalog可以用于建hive表，而spark_catalog2在建表时，会报错。
+
+![image-20220110161633851](http://image-picgo.test.upcdn.net/img/20220110161633.png)
+
+
+
+
+
+**总结**
+
+当使用SparkSessionCatalog时，catalog的名字**只能为spark_catalog**，而type根据需要可以选择hadoop或者hive。
+
+区别只是当type选择hive时，会将元数据会存储到HMS也会存储到hdfs，而选择hadoop时，只会存储到hdfs。
 
 
 
