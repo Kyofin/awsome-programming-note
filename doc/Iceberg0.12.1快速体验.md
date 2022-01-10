@@ -51,7 +51,7 @@ iceberg0.12.1内置了两个catalog的实现类：
 
 **org.apache.iceberg.spark.SparkCatalog**
 
-官方的介绍： A Spark TableCatalog implementation that wraps an Iceberg
+官方的介绍： A Spark TableCatalog implementation that wraps an Iceberg。这个catalog才是**Iceberg真正实现的catalog**，操作Iceberg元数据（无论hive还是hadoop）都是这个类实现的。
 
 参数说明：
 
@@ -67,7 +67,7 @@ warehouse是iceberg  warehouse，只有当type选择hadoop时需要。
 
 官方的介绍：A Spark catalog that can also load non-Iceberg tables. 
 
-在这个catalog内，会用spark原来内置的`org.apache.spark.sql.execution.datasources.v2.V2SessionCatalog`来操作hive表以及非Iceberg表。而且，还会初始化一个SparkCatalog用于操作 Iceberg，具体代码可以参考`org.apache.iceberg.spark.SparkSessionCatalog#buildSparkCatalog` 。
+在这个catalog内，会委托spark原来内置的`org.apache.spark.sql.execution.datasources.v2.V2SessionCatalog`来操作hive表。而且，还会在内部初始化一个SparkCatalog用于操作 Iceberg表，具体代码可以参考`org.apache.iceberg.spark.SparkSessionCatalog#buildSparkCatalog` 。
 
 ![image-20220110155321217](http://image-picgo.test.upcdn.net/img/20220110155321.png)
 
@@ -83,11 +83,19 @@ spark_catalog可以用于建hive表，而spark_catalog2在建表时，会报错�
 
 
 
-**总结**
+**总结如下**
 
-当使用SparkSessionCatalog时，catalog的名字**只能为spark_catalog**，而type根据需要可以选择hadoop或者hive。
+1. 当使用SparkSessionCatalog时，catalog的名字**只能为spark_catalog**，而type根据需要可以选择hadoop或者hive。
 
-区别只是当type选择hive时，会将元数据会存储到HMS也会存储到hdfs，而选择hadoop时，只会存储到hdfs。
+   区别只是当type选择hive时，会将元数据会存储到HMS也会存储到hdfs，而选择hadoop时，只会存储到hdfs。
+
+2. 当前版本下，在使用SparkSessionCatalog时，使用`show tables`只能看到hive表，是不可以查看到Iceberg表的。如果要看Iceberg表，需要使用SparkCatalog
+
+![image-20220110170019170](http://image-picgo.test.upcdn.net/img/20220110170023.png)
+
+
+
+
 
 
 
