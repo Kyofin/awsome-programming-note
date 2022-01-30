@@ -50,6 +50,11 @@
       <value>binary</value>
     </property>
 
+ <property>
+      <name>hive.metastore.warehouse.dir</name>
+      <value>/apps/hive/warehouse</value>
+    </property>
+
   </configuration>
 ```
 
