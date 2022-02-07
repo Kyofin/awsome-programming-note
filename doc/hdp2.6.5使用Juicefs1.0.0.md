@@ -1,4 +1,4 @@
-# hdp2.6.5使用Juicefs1.0.0
+# HDP2.6.5使用Juicefs1.0.0
 
 ## 部署服务器清单
 
@@ -32,7 +32,7 @@ http://10.93.11.50/data/minio/data   > /opt/minio_home/minio.log 2>&1 &
 
 ## 初始化juicefs元数据
 
-官方建议元数据存储在redis，但是hdp集群目前还没装redis，所以就用mysql来代替。首先下载minio的执行文件，然后上传服务器，然后在准备好mysql和minio后，就可以执行juicefs的元数据初始化命令。
+官方建议元数据存储在redis，但是hdp集群目前还没装redis，所以就用mysql来代替。首先下载minio的执行文件，然后上传服务器，然后在准备好mysql和minio后，就可以执行juicefs的元数据初始化命令。bing
 
 ```bash
 /opt/juicefs_home/juicefs format --storage minio \
@@ -50,6 +50,8 @@ http://10.93.11.50/data/minio/data   > /opt/minio_home/minio.log 2>&1 &
 
 ```bash
 /opt/juicefs_home/juicefs mount  "mysql://root:730xd7.2@(10.81.16.22:3306)/juicefs"   /opt/juicefs_home/mnt -d 
+
+取消挂载
 /opt/juicefs_home/juicefs  umount /opt/juicefs_home/mnt
 
 
@@ -120,7 +122,7 @@ cp /opt/juicefs_home/juicefs-hadoop-1.0.0-beta1-linux-amd64.jar /data/usync/last
 
 
 
-构建job json的配置文件时，读写hdfs都需要加入下面配置
+构建datax的job json配置文件时，读写hdfs都需要加入下面配置
 
 ```json
 {
