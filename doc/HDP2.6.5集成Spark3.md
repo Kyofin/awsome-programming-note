@@ -156,6 +156,16 @@ scala>
 
 
 
+也可以不关闭这个yarn的配置，直接在spark3的客户端里的`spark-default.conf`里配置以下内容：
+
+```
+spark.hadoop.yarn.timeline-service.enabled false
+```
+
+
+
+
+
 ### 读写hive表时报错。
 
 ```
@@ -272,5 +282,25 @@ bin/spark-shell --master local[*] --conf spark.sql.hive.metastore.version=1.2.1 
 ```
 spark.sql.hive.metastore.version 1.2.1  
 spark.sql.hive.metastore.jars /opt/spark-3.1.2-bin-hadoop2.7/dependency_libs/hive/*
+```
+
+
+
+
+
+# yarn开启HA后报错
+
+报错信息显示下面类不存在。
+
+```
+org.apache.hadoop.yarn.client.RequestHedgingRMFailoverProxyProvider
+```
+
+**解决办法**：
+
+在ambari中设置yarn的配置。
+
+```
+yarn.client.failover-proxy-provider=org.apache.hadoop.yarn.client.ConfiguredRMFailoverProxyProvider
 ```
 
