@@ -8,6 +8,11 @@
 
 
 
+## 离线环境内依赖文件提前下载
+
+链接: https://pan.baidu.com/s/19RZZmR0OUH5781XSkAs_GQ 提取码: fndt 
+
+
 ## docker
 
 yum install docker
@@ -18,7 +23,7 @@ yum install docker
 
 ```ruby
 wget https://dl.minio.io/server/minio/release/linux-arm64/minio
- chmod +x ./minio
+chmod +x ./minio
 mkdir -p /minio/minio_data
 
 nohup ./minio server /minio/minio_data  --console-address :9002 > /minio/minio_data/minio.log 2>&1 &
@@ -117,9 +122,9 @@ source /etc/profile
 
 ## go
 
-rm -rf /usr/local/go
+wget https://golang.google.cn/dl/go1.16.1.linux-arm64.tar.gz
 
- tar zxf go1.15.15.linux-arm64.tar.gz -C /usr/local
+rm -rf /usr/local/go
 
 tar zxf go1.16.1.linux-arm64.tar.gz   -C /usr/local
 
@@ -173,9 +178,10 @@ go run hello.go
 官网现在都没ARM架构下的hadoop java sdk，所以需要自行编译。准备好maven、jdk、go的环境就可以进行编译了。
 
 ```
-$ git clone https://github.com/juicedata/juicefs.git
-$ cd juicefs/sdk/java
-$ make
+unzip juicefs-main.zip
+
+cd juicefs-main/sdk/java
+make
 ```
 
 编译完成后，可以在 `sdk/java/target` 目录中找到编译好的 `JAR` 文件，包括两个版本：
@@ -193,6 +199,8 @@ $ make
 
 ```
 wget https://archive.apache.org/dist/hadoop/hadoop-2.8.0.tar.gz
+ tar zxvf hadoop-2.8.0.tar.gz 
+
 ```
 
 修改core-site.xml
@@ -224,4 +232,15 @@ wget https://archive.apache.org/dist/hadoop/hadoop-2.8.0.tar.gz
 </property>
 ````
 
-hadoop fs  -ls  jfs://unjfs/
+拷贝juicefs haddop sdk到`/root/hadoop-2.8.0/share/hadoop/common/share/hadoop/common/`目录
+
+
+
+```
+cd ~/hadoop-2.8.0
+
+./bin/hadoop fs  -put ~/hadoop-2.8.0.tar.gz  jfs://unjfs/
+
+./bin/hadoop  fs  -ls  jfs://unjfs/
+```
+
